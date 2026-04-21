@@ -26,7 +26,6 @@ export default function Page() {
   const currentView: View = pathname === "/lapor" ? "/lapor" : pathname === "/survei" ? "/survei" : pathname === "/admin" ? "/admin" : "/"
   const [toast, setToast] = useState<ToastState>({ show: false, message: "", type: "success" })
   const [auth, setAuth] = useState<AuthSession | null>(null)
-  const [mounted, setMounted] = useState(false)
   const [showPreloader, setShowPreloader] = useState(true)
   const [unreadCount, setUnreadCount] = useState(0)
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
@@ -34,12 +33,15 @@ export default function Page() {
   const [wellness, setWellness] = useState<WellnessConfig>(DEFAULT_SETTINGS.wellness ?? { prayerLockEnabled: true, healthToastEnabled: true })
   const isAdmin = auth?.role === "admin"
 
-  // Handle mount and preloader
+  // Preloader timer - runs on client only
   useEffect(() => {
-    setMounted(true)
+    if (currentView !== "/admin") {
+      setShowPreloader(false)
+      return
+    }
     const timer = setTimeout(() => setShowPreloader(false), 1200)
     return () => clearTimeout(timer)
-  }, [])
+  }, [currentView])
 
   useEffect(() => {
     const unsub = subscribeAuth((s) => setAuth(s))
@@ -147,7 +149,7 @@ export default function Page() {
         )}
         {currentView === "/survei" && <SurveyView showToast={showToast} user={auth} />}
         {currentView === "/admin" && (
-          !mounted || showPreloader ? (
+          showPreloader ? (
             <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-white dark:bg-slate-950">
               <div className="flex flex-col items-center gap-8">
                 {/* Animated rings */}
