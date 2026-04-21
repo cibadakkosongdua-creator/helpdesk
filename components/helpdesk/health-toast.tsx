@@ -49,6 +49,14 @@ export const HEALTH_REMINDERS: HealthReminder[] = [
   },
 ]
 
+// Button colors for each reminder type
+const BUTTON_COLORS: Record<HealthReminderType, string> = {
+  eye: "bg-blue-500 hover:bg-blue-600 dark:bg-blue-500 dark:hover:bg-blue-600",
+  stand: "bg-emerald-500 hover:bg-emerald-600 dark:bg-emerald-500 dark:hover:bg-emerald-600",
+  water: "bg-cyan-500 hover:bg-cyan-600 dark:bg-cyan-500 dark:hover:bg-cyan-600",
+  posture: "bg-amber-500 hover:bg-amber-600 dark:bg-amber-500 dark:hover:bg-amber-600",
+}
+
 type HealthToastProps = {
   enabled: boolean
 }
@@ -131,7 +139,7 @@ export function HealthToast({ enabled }: HealthToastProps) {
         <div className="flex gap-2 mt-3">
           <button
             onClick={dismissReminder}
-            className={`flex-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-white transition-colors ${currentReminder.bgColor.replace("100", "500").replace("/20", "")}`}
+            className={`flex-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-white transition-colors ${BUTTON_COLORS[currentReminder.type]}`}
           >
             OK, Mengerti
           </button>
