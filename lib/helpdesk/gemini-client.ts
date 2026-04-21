@@ -77,9 +77,16 @@ export async function aiSearchService(
 export async function aiChatReply(
   message: string,
   history: { role: "user" | "ai"; text: string }[],
+  context?: {
+    schoolName?: string
+    schoolHours?: string
+    services?: { name: string; description: string }[]
+    faq?: { question: string; answer: string }[]
+    emergencyContacts?: { label: string; phone: string }[]
+  },
 ): Promise<string> {
   try {
-    const data = await callApi<{ text: string }>("chat", { message, history })
+    const data = await callApi<{ text: string }>("chat", { message, history, context })
     return data.text
   } catch (err) {
     console.warn("[helpdesk] Gemini chat failed, using heuristic:", (err as Error)?.message)

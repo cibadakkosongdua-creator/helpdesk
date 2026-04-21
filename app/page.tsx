@@ -15,7 +15,7 @@ import { TicketView } from "@/components/helpdesk/ticket-view"
 import { Toast, type ToastState } from "@/components/helpdesk/toast"
 import type { View } from "@/components/helpdesk/types"
 import { signOut as fbSignOut, subscribeAuth, toAdminSession, setFirestoreAdminEmails, type AuthSession } from "@/lib/helpdesk/auth-service"
-import { subscribeSettings } from "@/lib/helpdesk/settings-service"
+import { subscribeSettings, type SocialLink } from "@/lib/helpdesk/settings-service"
 import { subscribeTickets, type Ticket } from "@/lib/helpdesk/firestore-service"
 
 export default function Page() {
@@ -26,6 +26,7 @@ export default function Page() {
   const [auth, setAuth] = useState<AuthSession | null>(null)
   const [unreadCount, setUnreadCount] = useState(0)
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
+  const [socialLinks, setSocialLinks] = useState<SocialLink[]>([])
   const isAdmin = auth?.role === "admin"
 
   useEffect(() => {
@@ -33,10 +34,11 @@ export default function Page() {
     return () => unsub()
   }, [])
 
-  // Sync Firestore admin emails to auth-service
+  // Sync Firestore admin emails to auth-service and get social links
   useEffect(() => {
     const unsub = subscribeSettings((s) => {
       if (s.adminEmails.length > 0) setFirestoreAdminEmails(s.adminEmails)
+      setSocialLinks(s.socialLinks)
     })
     return () => unsub()
   }, [])
@@ -150,10 +152,12 @@ export default function Page() {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
+            {/* WhatsApp hardcoded - utama */}
             <FooterLink href="https://wa.me/6285156365324" label="WhatsApp" />
-            <FooterLink href="https://www.instagram.com/sdn02cibadak" label="Instagram" />
-            <FooterLink href="https://www.facebook.com/sdn02cibadak" label="Facebook" />
-            <FooterLink href="https://www.youtube.com/@sdn02cibadak" label="YouTube" />
+            {/* Social links from settings */}
+            {socialLinks.map((link) => (
+              <FooterLink key={link.id} href={link.url} label={link.platform} />
+            ))}
           </div>
         </div>
         <p className="text-[11px] text-slate-400/80 dark:text-slate-600/80 mt-3 text-center">

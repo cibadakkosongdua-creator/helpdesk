@@ -98,17 +98,43 @@ Jawab HANYA dalam format JSON valid satu baris:
 {"serviceId":"<id atau null>","explanation":"<1-2 kalimat bahasa Indonesia>"}`
     }
     case "chat": {
-      const { message, history } = payload as {
+      const { message, history, context } = payload as {
         message: string
         history?: { role: "user" | "ai"; text: string }[]
+        context?: {
+          schoolName?: string
+          schoolHours?: string
+          services?: { name: string; description: string }[]
+          faq?: { question: string; answer: string }[]
+          emergencyContacts?: { label: string; phone: string }[]
+        }
       }
       const h = (history ?? [])
         .slice(-6)
         .map((m) => `${m.role === "user" ? "User" : "AI"}: ${m.text}`)
         .join("\n")
-      return `Anda "Asisten AI Bantuan" ramah & ringkas untuk portal SDN 02 Cibadak. Jawab dalam Bahasa Indonesia, maksimal 3 kalimat, fokus pada layanan sekolah (lihat daftar di bawah). Jika di luar ruang lingkup, arahkan ke menu Lapor Kendala.
+
+      // Build knowledge base from context
+      let knowledgeBase = ""
+      if (context) {
+        if (context.schoolName) knowledgeBase += `Nama sekolah: ${context.schoolName}\n`
+        if (context.schoolHours) knowledgeBase += `Jam operasional: ${context.schoolHours}\n`
+        if (context.services?.length) {
+          knowledgeBase += `Layanan tersedia:\n${context.services.map(s => `- ${s.name}: ${s.description}`).join("\n")}\n`
+        }
+        if (context.faq?.length) {
+          knowledgeBase += `FAQ:\n${context.faq.map(f => `- Q: ${f.question}\n  A: ${f.answer}`).join("\n")}\n`
+        }
+        if (context.emergencyContacts?.length) {
+          knowledgeBase += `Kontak darurat:\n${context.emergencyContacts.map(c => `- ${c.label}: ${c.phone}`).join("\n")}\n`
+        }
+      }
+
+      return `Anda "Asisten AI Bantuan" ramah & ringkas untuk portal ${context?.schoolName || "SDN 02 Cibadak"}. Jawab dalam Bahasa Indonesia, maksimal 3 kalimat, fokus pada layanan sekolah. Gunakan informasi berikut sebagai pengetahuan Anda:
 
 ${SERVICES_CONTEXT}
+
+${knowledgeBase || ""}
 
 Riwayat:
 ${h}

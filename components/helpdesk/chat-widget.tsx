@@ -1,13 +1,20 @@
 "use client"
 
-import { Bot, MessageCircle, Minus, Send, Sparkles } from "lucide-react"
+import { Bot, FileText, MessageCircle, Minus, PlusCircle, Search, Send, Sparkles, User, X } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
+import { useRouter } from "next/navigation"
 import { aiChatReply } from "@/lib/helpdesk/gemini-client"
+import { subscribeSettings, type AppSettings, DEFAULT_SETTINGS } from "@/lib/helpdesk/settings-service"
+import { saveChatSession, updateChatSession, type ChatMessage, subscribeChatSessions, type ChatSession } from "@/lib/helpdesk/firestore-service"
+import { subscribeAuth, type AuthSession } from "@/lib/helpdesk/auth-service"
 
-type Message = { role: "ai" | "user"; text: string }
+type Message = { role: "ai" | "user"; text: string; isAction?: boolean }
 
 export function ChatWidget() {
+  const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
+  const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS)
+  const [auth, setAuth] = useState<AuthSession | null>(null)
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "ai",
@@ -16,7 +23,42 @@ export function ChatWidget() {
   ])
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [showActions, setShowActions] = useState(false)
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null)
+  const [chatHistory, setChatHistory] = useState<ChatSession[]>([])
+  const [showProactive, setShowProactive] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
+
+  // Proactive message - show after 5 seconds if chat not opened
+  useEffect(() => {
+    if (isOpen) return
+    const timer = setTimeout(() => {
+      const hasSeenProactive = localStorage.getItem("helpdesk_proactive_seen")
+      if (!hasSeenProactive) {
+        setShowProactive(true)
+      }
+    }, 5000)
+    return () => clearTimeout(timer)
+  }, [isOpen])
+
+  // Subscribe to auth
+  useEffect(() => {
+    const unsub = subscribeAuth(setAuth)
+    return () => unsub()
+  }, [])
+
+  // Subscribe to settings for knowledge base
+  useEffect(() => {
+    const unsub = subscribeSettings(setSettings)
+    return () => unsub()
+  }, [])
+
+  // Subscribe to chat history if user is logged in
+  useEffect(() => {
+    if (!auth?.uid) return
+    const unsub = subscribeChatSessions(auth.uid, setChatHistory)
+    return () => unsub()
+  }, [auth?.uid])
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight
@@ -26,13 +68,38 @@ export function ChatWidget() {
     e.preventDefault()
     if (!input.trim() || isLoading) return
     const userText = input.trim()
-    const history = messages
+    const history = messages.filter(m => !m.isAction)
     setMessages((prev) => [...prev, { role: "user", text: userText }])
     setInput("")
     setIsLoading(true)
+    setShowActions(false)
     try {
-      const reply = await aiChatReply(userText, history)
-      setMessages((prev) => [...prev, { role: "ai", text: reply }])
+      // Build context from settings
+      const context = {
+        schoolName: "SDN 02 Cibadak",
+        schoolHours: "Senin-Jumat, 07:00-15:00 WIB",
+        services: settings.services.map(s => ({ name: s.name, description: s.description })),
+        faq: settings.faq,
+        emergencyContacts: settings.emergencyContacts.map(c => ({ label: c.label, phone: c.phone })),
+      }
+      const reply = await aiChatReply(userText, history, context)
+      const newMessages = [...messages.filter(m => !m.isAction), { role: "user" as const, text: userText }, { role: "ai" as const, text: reply }]
+      setMessages(newMessages)
+
+      // Save to chat history if user is logged in
+      if (auth?.uid) {
+        const chatMsgs: ChatMessage[] = newMessages.map(m => ({
+          role: m.role,
+          text: m.text,
+          timestamp: Date.now(),
+        }))
+        if (currentSessionId) {
+          await updateChatSession(currentSessionId, chatMsgs)
+        } else {
+          const id = await saveChatSession(auth.uid, chatMsgs)
+          setCurrentSessionId(id)
+        }
+      }
     } catch (err: any) {
       setMessages((prev) => [
         ...prev,
@@ -43,7 +110,34 @@ export function ChatWidget() {
     }
   }
 
-  const suggestions = ["Cara pinjam buku?", "Lupa password", "Cek nilai rapor"]
+  // Quick Actions
+  const handleCreateTicket = () => {
+    setMessages(prev => [...prev, 
+      { role: "user", text: "Saya mau buat tiket laporan", isAction: true },
+      { role: "ai", text: "Baik, saya akan mengarahkan Anda ke form pembuatan tiket. Silakan isi detail keluhan Anda di sana.", isAction: true }
+    ])
+    setIsOpen(false)
+    router.push("/lapor")
+  }
+
+  const handleTrackTicket = () => {
+    setMessages(prev => [...prev,
+      { role: "user", text: "Saya mau cek status tiket", isAction: true },
+      { role: "ai", text: "Untuk melacak tiket, Anda memerlukan kode tiket (contoh: ABC123). Silakan masukkan kode tiket Anda di halaman pelacakan.", isAction: true }
+    ])
+    setShowActions(true)
+  }
+
+  const handleTalkToHuman = () => {
+    setMessages(prev => [...prev,
+      { role: "user", text: "Saya mau bicara dengan admin", isAction: true },
+      { role: "ai", text: "Baik, saya akan membuatkan tiket untuk Anda agar tim admin dapat menghubungi Anda. Silakan isi form laporan dengan detail masalah Anda.", isAction: true }
+    ])
+    setIsOpen(false)
+    router.push("/lapor")
+  }
+
+  const suggestions = ["Cara pinjam buku?", "Lupa password", "Cek nilai rapor", "Jam sekolah?"]
 
   return (
     <div className="fixed bottom-24 md:bottom-8 right-4 md:right-8 z-[90] flex flex-col items-end">
@@ -108,8 +202,34 @@ export function ChatWidget() {
                 </div>
               </div>
             )}
-            {messages.length === 1 && !isLoading && (
-              <div className="flex flex-wrap gap-2 pt-2">
+            {/* Quick Action Buttons */}
+            <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-200/60 dark:border-white/5 mt-4">
+              <button
+                onClick={handleCreateTicket}
+                className="flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-500/20 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-colors"
+              >
+                <PlusCircle className="w-3.5 h-3.5" />
+                Buat Tiket
+              </button>
+              <button
+                onClick={handleTrackTicket}
+                className="flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-full bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-200/60 dark:border-amber-500/20 hover:bg-amber-100 dark:hover:bg-amber-500/20 transition-colors"
+              >
+                <Search className="w-3.5 h-3.5" />
+                Lacak Tiket
+              </button>
+              <button
+                onClick={handleTalkToHuman}
+                className="flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-full bg-slate-50 dark:bg-slate-500/10 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-500/20 hover:bg-slate-100 dark:hover:bg-slate-500/20 transition-colors"
+              >
+                <User className="w-3.5 h-3.5" />
+                Bicara Admin
+              </button>
+            </div>
+
+            {/* Suggestions */}
+            {messages.length <= 2 && !isLoading && (
+              <div className="flex flex-wrap gap-2 pt-3">
                 {suggestions.map((s) => (
                   <button
                     key={s}
@@ -149,9 +269,38 @@ export function ChatWidget() {
         </div>
       )}
 
+      {/* Proactive Message Popup */}
+      {!isOpen && showProactive && (
+        <div className="mb-3 max-w-[280px] bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-white/10 rounded-2xl shadow-xl p-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <div className="flex items-start gap-3">
+            <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center text-blue-600 dark:text-blue-400 flex-shrink-0">
+              <Bot className="w-4 h-4" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+                Halo! Ada yang bisa saya bantu? Klik untuk mulai chat dengan AI asisten.
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                setShowProactive(false)
+                localStorage.setItem("helpdesk_proactive_seen", "true")
+              }}
+              className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
       {!isOpen && (
         <button
-          onClick={() => setIsOpen(true)}
+          onClick={() => {
+            setIsOpen(true)
+            setShowProactive(false)
+            localStorage.setItem("helpdesk_proactive_seen", "true")
+          }}
           className="group relative flex items-center justify-center w-14 h-14 md:w-16 md:h-16 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-full shadow-[0_8px_30px_rgba(59,130,246,0.4)] hover:scale-110 hover:-translate-y-1 active:scale-95 transition-all duration-300 animate-in zoom-in"
           aria-label="Buka asisten AI"
         >

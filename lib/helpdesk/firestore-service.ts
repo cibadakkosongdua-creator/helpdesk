@@ -826,3 +826,110 @@ export async function findRecentTicketsByService(
     return local
   }
 }
+
+/* ---------- Chat History ---------- */
+
+export type ChatMessage = {
+  role: "user" | "ai"
+  text: string
+  timestamp: number
+}
+
+export type ChatSession = {
+  id: string
+  uid: string
+  messages: ChatMessage[]
+  createdAt: number
+  updatedAt: number
+}
+
+const CHAT_SESSIONS_COL = "chat_sessions"
+const CHAT_SESSIONS_LS = "helpdesk_chat_sessions"
+
+export function subscribeChatSessions(
+  uid: string,
+  onUpdate: (sessions: ChatSession[]) => void,
+): () => void {
+  const { db } = getFirebase()
+  const local = lsRead<ChatSession>(CHAT_SESSIONS_LS).filter(s => s.uid === uid)
+  onUpdate(local)
+
+  if (!db) return () => {}
+
+  const q = query(
+    collection(db, CHAT_SESSIONS_COL),
+    where("uid", "==", uid),
+    orderBy("updatedAt", "desc"),
+    fsLimit(20),
+  )
+
+  const unsub = onSnapshot(q, (snap) => {
+    const list = snap.docs.map(d => ({
+      id: d.id,
+      ...d.data(),
+    })) as ChatSession[]
+    lsWrite(CHAT_SESSIONS_LS, list)
+    onUpdate(list)
+  }, () => {
+    onUpdate(local)
+  })
+
+  return unsub
+}
+
+export async function saveChatSession(
+  uid: string,
+  messages: ChatMessage[],
+): Promise<string> {
+  const { db } = getFirebase()
+  const nowMs = Date.now()
+
+  const session: Omit<ChatSession, "id"> = {
+    uid,
+    messages,
+    createdAt: nowMs,
+    updatedAt: nowMs,
+  }
+
+  // Save to localStorage
+  const local = lsRead<ChatSession>(CHAT_SESSIONS_LS)
+  const newSession: ChatSession = { id: `LOCAL-${nowMs.toString(36)}`, ...session }
+  local.unshift(newSession)
+  lsWrite(CHAT_SESSIONS_LS, local.slice(0, 20))
+
+  if (!db) return newSession.id
+
+  try {
+    const ref = await addDoc(collection(db, CHAT_SESSIONS_COL), session)
+    return ref.id
+  } catch {
+    return newSession.id
+  }
+}
+
+export async function updateChatSession(
+  id: string,
+  messages: ChatMessage[],
+): Promise<void> {
+  const { db } = getFirebase()
+  const nowMs = Date.now()
+
+  // Update localStorage
+  const local = lsRead<ChatSession>(CHAT_SESSIONS_LS)
+  const idx = local.findIndex(s => s.id === id)
+  if (idx >= 0) {
+    local[idx] = { ...local[idx], messages, updatedAt: nowMs }
+    lsWrite(CHAT_SESSIONS_LS, local)
+  }
+
+  if (!db || id.startsWith("LOCAL-")) return
+
+  try {
+    await updateDoc(doc(db, CHAT_SESSIONS_COL, id), {
+      messages,
+      updatedAt: nowMs,
+    })
+  } catch {
+    // ignore
+  }
+}
