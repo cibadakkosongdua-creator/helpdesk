@@ -21,12 +21,15 @@ export type PrayerState = {
 
 // Approximate prayer times for Cibadak (can be adjusted)
 // These are standard times, actual may vary slightly
-const PRAYER_SCHEDULE: Record<PrayerName, { hour: number; minute: number; duration: number }> = {
-  Subuh: { hour: 4, minute: 35, duration: 30 },    // 04:35 - 05:05
-  Dhuhur: { hour: 12, minute: 5, duration: 30 },   // 12:05 - 12:35
-  Ashar: { hour: 15, minute: 15, duration: 30 },   // 15:15 - 15:45
-  Maghrib: { hour: 18, minute: 5, duration: 30 },  // 18:05 - 18:35
-  Isya: { hour: 19, minute: 15, duration: 30 },    // 19:15 - 19:45
+// Lock duration: 15 minutes for each prayer
+const LOCK_DURATION_MINUTES = 15
+
+export const PRAYER_SCHEDULE: Record<PrayerName, { hour: number; minute: number; lockDuration: number }> = {
+  Subuh: { hour: 4, minute: 35, lockDuration: LOCK_DURATION_MINUTES },    // Lock 15 min from 04:35
+  Dhuhur: { hour: 12, minute: 5, lockDuration: LOCK_DURATION_MINUTES },   // Lock 15 min from 12:05
+  Ashar: { hour: 15, minute: 15, lockDuration: LOCK_DURATION_MINUTES },   // Lock 15 min from 15:15
+  Maghrib: { hour: 18, minute: 5, lockDuration: LOCK_DURATION_MINUTES },   // Lock 15 min from 18:05
+  Isya: { hour: 19, minute: 15, lockDuration: LOCK_DURATION_MINUTES },    // Lock 15 min from 19:15
 }
 
 /**
@@ -59,7 +62,7 @@ export function getPrayerState(): PrayerState {
   // Check if currently in prayer time
   for (const prayer of prayerTimes) {
     const schedule = PRAYER_SCHEDULE[prayer.name]
-    const endTimestamp = prayer.timestamp + schedule.duration * 60 * 1000
+    const endTimestamp = prayer.timestamp + schedule.lockDuration * 60 * 1000
 
     if (currentMs >= prayer.timestamp && currentMs < endTimestamp) {
       const remainingMs = endTimestamp - currentMs

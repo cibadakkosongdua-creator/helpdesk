@@ -1,8 +1,8 @@
 "use client"
 
-import { Clock, Moon, Sun, Sunset, X } from "lucide-react"
+import { Clock, Lock, Moon, Sun, Sunset, X } from "lucide-react"
 import { useEffect, useState } from "react"
-import { getPrayerState, getTodayPrayerTimes, type PrayerName, type PrayerState, formatTimeRemaining, shouldShowReminder } from "@/lib/helpdesk/prayer-times"
+import { getPrayerState, getTodayPrayerTimes, PRAYER_SCHEDULE, type PrayerName, type PrayerState, formatTimeRemaining, shouldShowReminder } from "@/lib/helpdesk/prayer-times"
 
 const PRAYER_ICONS: Record<PrayerName, typeof Sun> = {
   Subuh: Moon,
@@ -25,12 +25,12 @@ type PrayerLockProps = {
   onDismiss?: () => void
 }
 
-export function PrayerLock({ enabled, onDismiss }: PrayerLockProps) {
+export function PrayerLock({ enabled }: PrayerLockProps) {
   const [state, setState] = useState<PrayerState>({ current: null, next: null, isLocked: false, remainingMinutes: 0 })
   const [showReminder, setShowReminder] = useState(false)
   const [reminderPrayer, setReminderPrayer] = useState<PrayerName | null>(null)
   const [reminderMinutes, setReminderMinutes] = useState(0)
-  const [dismissed, setDismissed] = useState(false)
+  const [countdown, setCountdown] = useState({ minutes: 0, seconds: 0 })
 
   useEffect(() => {
     if (!enabled) return
@@ -40,7 +40,7 @@ export function PrayerLock({ enabled, onDismiss }: PrayerLockProps) {
       setState(currentState)
 
       const reminder = shouldShowReminder()
-      if (reminder.show && !dismissed) {
+      if (reminder.show) {
         setShowReminder(true)
         setReminderPrayer(reminder.prayer)
         setReminderMinutes(reminder.minutesUntil)
@@ -50,15 +50,38 @@ export function PrayerLock({ enabled, onDismiss }: PrayerLockProps) {
     check()
     const interval = setInterval(check, 30000) // Check every 30 seconds
     return () => clearInterval(interval)
-  }, [enabled, dismissed])
+  }, [enabled])
 
-  // Reset dismissed when prayer changes
+  // Countdown timer
   useEffect(() => {
-    if (state.current) {
-      setDismissed(false)
+    if (!state.isLocked) return
+
+    const updateCountdown = () => {
+      const now = new Date()
+      const currentMs = now.getHours() * 60 * 60 * 1000 + now.getMinutes() * 60 * 1000 + now.getSeconds() * 1000
+      const prayerTimes = getTodayPrayerTimes()
+      const prayer = prayerTimes.find(p => p.name === state.current)
+      if (prayer) {
+        const schedule = PRAYER_SCHEDULE[prayer.name]
+        const endTimestamp = prayer.timestamp + schedule.lockDuration * 60 * 1000
+        const remainingMs = Math.max(0, endTimestamp - currentMs)
+        const mins = Math.floor(remainingMs / 60000)
+        const secs = Math.floor((remainingMs % 60000) / 1000)
+        setCountdown({ minutes: mins, seconds: secs })
+      }
+    }
+
+    updateCountdown()
+    const interval = setInterval(updateCountdown, 1000)
+    return () => clearInterval(interval)
+  }, [state.isLocked, state.current])
+
+  // Hide reminder when prayer starts
+  useEffect(() => {
+    if (state.isLocked) {
       setShowReminder(false)
     }
-  }, [state.current])
+  }, [state.isLocked])
 
   if (!enabled) return null
 
@@ -81,10 +104,7 @@ export function PrayerLock({ enabled, onDismiss }: PrayerLockProps) {
               </div>
             </div>
             <button
-              onClick={() => {
-                setShowReminder(false)
-                setDismissed(true)
-              }}
+              onClick={() => setShowReminder(false)}
               className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400"
             >
               <X className="w-5 h-5" />
@@ -97,13 +117,10 @@ export function PrayerLock({ enabled, onDismiss }: PrayerLockProps) {
 
           <div className="flex gap-2">
             <button
-              onClick={() => {
-                setShowReminder(false)
-                setDismissed(true)
-              }}
+              onClick={() => setShowReminder(false)}
               className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
             >
-              Ingatkan Nanti
+              Tutup
             </button>
             <button
               onClick={() => setShowReminder(false)}
@@ -117,42 +134,64 @@ export function PrayerLock({ enabled, onDismiss }: PrayerLockProps) {
     )
   }
 
-  // Show lock screen during prayer time
+  // Show lock screen during prayer time (mandatory, no skip)
   if (state.isLocked && state.current) {
     const Icon = PRAYER_ICONS[state.current]
     return (
       <div className="fixed inset-0 z-[300] flex items-center justify-center bg-gradient-to-br from-emerald-900 via-teal-900 to-slate-900 animate-in fade-in p-4">
         <div className="max-w-md w-full text-center">
+          {/* Lock Icon */}
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-white/10 backdrop-blur-xl flex items-center justify-center">
+            <Lock className="w-8 h-8 text-white/80" />
+          </div>
+
+          {/* Lock Message */}
+          <p className="text-sm text-white/60 mb-2">Aplikasi dikunci sementara</p>
+
           {/* Prayer Icon */}
-          <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-white/10 backdrop-blur-xl flex items-center justify-center animate-pulse">
+          <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-white/10 backdrop-blur-xl flex items-center justify-center animate-pulse">
             <Icon className="w-12 h-12 text-white" />
           </div>
 
           {/* Prayer Name */}
           <h1 className="text-4xl font-bold text-white mb-2">Waktu Sholat {state.current}</h1>
-          <p className="text-xl text-white/70 mb-6">Saatnya mendekat kepada Allah SWT</p>
+          <p className="text-lg text-white/70 mb-4">Saatnya mendekat kepada Allah SWT</p>
+
+          {/* Countdown Timer */}
+          <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-6 mb-4">
+            <p className="text-xs text-white/50 mb-2 uppercase tracking-wide">Aplikasi akan dibuka dalam</p>
+            <div className="flex items-center justify-center gap-2">
+              <div className="text-center">
+                <div className="text-5xl font-bold text-white tabular-nums">
+                  {String(countdown.minutes).padStart(2, "0")}
+                </div>
+                <p className="text-xs text-white/50 mt-1">menit</p>
+              </div>
+              <div className="text-4xl font-bold text-white/50 animate-pulse">:</div>
+              <div className="text-center">
+                <div className="text-5xl font-bold text-white tabular-nums">
+                  {String(countdown.seconds).padStart(2, "0")}
+                </div>
+                <p className="text-xs text-white/50 mt-1">detik</p>
+              </div>
+            </div>
+          </div>
 
           {/* Verse */}
-          <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-4 mb-6">
-            <p className="text-white/90 italic text-sm leading-relaxed">
+          <div className="bg-white/5 backdrop-blur-xl rounded-xl p-4 mb-4">
+            <p className="text-white/80 italic text-sm leading-relaxed">
               {PRAYER_VERSES[state.current]}
             </p>
           </div>
 
-          {/* Remaining Time */}
-          <div className="flex items-center justify-center gap-2 text-white/60 mb-8">
-            <Clock className="w-4 h-4" />
-            <span className="text-sm">Waktu tersisa: {formatTimeRemaining(state.remainingMinutes)}</span>
-          </div>
-
           {/* Prayer Schedule */}
           <div className="bg-white/5 backdrop-blur rounded-xl p-4">
-            <p className="text-xs text-white/50 mb-3 uppercase tracking-wide">Jadwal Sholat Hari Ini</p>
+            <p className="text-xs text-white/50 mb-3 uppercase tracking-wide">Jadwal 5 Waktu Sholat Hari Ini</p>
             <div className="grid grid-cols-5 gap-2">
               {prayerTimes.map((prayer) => (
                 <div
                   key={prayer.name}
-                  className={`p-2 rounded-lg ${prayer.name === state.current ? "bg-white/20" : ""}`}
+                  className={`p-2 rounded-lg transition-all ${prayer.name === state.current ? "bg-white/20 ring-2 ring-white/30" : ""}`}
                 >
                   <p className="text-[10px] text-white/50">{prayer.name}</p>
                   <p className="text-sm font-semibold text-white">{prayer.time}</p>
@@ -160,16 +199,6 @@ export function PrayerLock({ enabled, onDismiss }: PrayerLockProps) {
               ))}
             </div>
           </div>
-
-          {/* Skip Button (for non-Muslims or emergencies) */}
-          {onDismiss && (
-            <button
-              onClick={onDismiss}
-              className="mt-6 text-xs text-white/40 hover:text-white/60 underline"
-            >
-              Lewati (untuk non-Muslim atau darurat)
-            </button>
-          )}
         </div>
       </div>
     )
