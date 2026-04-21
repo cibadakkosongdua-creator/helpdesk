@@ -142,7 +142,7 @@ export function SurveyView({ showToast, user }: { showToast: ShowToastFn; user: 
               className="w-full appearance-none bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-white/10 rounded-2xl px-5 py-4 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-amber-500/50 focus:ring-4 focus:ring-amber-500/10 transition-all font-medium cursor-pointer"
             >
               {settingsServices.map((s) => (
-                <option key={s.id} value={s.id}>
+                <option key={s.id} value={s.id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
                   {s.name}
                 </option>
               ))}

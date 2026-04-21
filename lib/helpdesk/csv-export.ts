@@ -1,6 +1,6 @@
 "use client"
 
-import type { Feedback, Ticket } from "./firestore-service"
+import type { AuditLog, Feedback, Ticket } from "./firestore-service"
 
 function csvCell(v: unknown): string {
   const s = String(v ?? "").replace(/\r?\n/g, " ").replace(/"/g, '""')
@@ -75,6 +75,19 @@ export function exportFeedbacksCSV(
  * "Cetak PDF" = trigger browser print dialog. Admin dapat memilih Save as PDF.
  * Dokumen di-style minimal via print CSS di globals.
  */
+export function exportAuditsCSV(audits: AuditLog[]) {
+  const header = ["Waktu", "Aktivitas", "Pelaku", "Target", "Detail"]
+  const rows = audits.map((a) => [
+    new Date(a.createdAt).toLocaleString("id-ID"),
+    a.action,
+    a.actor,
+    a.target,
+    a.meta || "",
+  ])
+  const csv = [header, ...rows].map((r) => r.map(csvCell).join(",")).join("\n")
+  downloadFile(`audit-log-${stamp()}.csv`, csv)
+}
+
 export function printReport() {
   if (typeof window === "undefined") return
   window.print()

@@ -143,10 +143,6 @@ export default function Page() {
 
       <ChatWidget />
 
-      {/* Wellness Features */}
-      <PrayerLock enabled={wellness.prayerLockEnabled} />
-      <HealthToast enabled={wellness.healthToastEnabled} />
-
       {/* Footer Links */}
       <footer className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-28 md:pb-8 pt-8 border-t border-slate-200/60 dark:border-white/5">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">

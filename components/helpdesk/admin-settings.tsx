@@ -283,23 +283,23 @@ function PortalSection({
         {services.map((s) => {
           const current = status[s.id] ?? "online"
           return (
-            <div key={s.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200/60 dark:border-white/5">
-              <div>
+            <div key={s.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200/60 dark:border-white/5">
+              <div className="min-w-0 flex-1">
                 <p className="text-sm font-bold text-slate-900 dark:text-white">{s.name}</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">{s.url}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{s.url}</p>
               </div>
-              <div className="flex gap-1.5">
+              <div className="flex flex-wrap gap-1.5 sm:flex-nowrap">
                 {statusOptions.map((opt) => (
                   <button
                     key={opt.value}
                     onClick={() => toggle(s.id, opt.value)}
-                    className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all ${
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                       current === opt.value
                         ? `${opt.color} text-white shadow-sm`
                         : "bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600"
                     }`}
                   >
-                    <span className={`w-1.5 h-1.5 rounded-full ${current === opt.value ? "bg-white/80" : opt.color}`} />
+                    <span className={`w-2 h-2 rounded-full ${current === opt.value ? "bg-white/80" : opt.color}`} />
                     {opt.label}
                   </button>
                 ))}
@@ -737,7 +737,7 @@ function MaintenanceSection({
                       className="input-field"
                     >
                       {services.map((svc) => (
-                        <option key={svc.id} value={svc.id}>{svc.name}</option>
+                        <option key={svc.id} value={svc.id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">{svc.name}</option>
                       ))}
                     </select>
                   </div>

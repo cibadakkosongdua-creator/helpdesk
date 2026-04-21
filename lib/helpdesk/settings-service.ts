@@ -212,9 +212,6 @@ export const saveServices = async (services: ServiceConfig[]) => {
 export const saveSocialLinks = (socialLinks: SocialLink[]) =>
   saveSettings({ socialLinks })
 
-export const saveWellness = (wellness: WellnessConfig) =>
-  saveSettings({ wellness })
-
 export const saveAnnouncement = (announcement: AnnouncementConfig) =>
   saveSettings({ announcement })
 

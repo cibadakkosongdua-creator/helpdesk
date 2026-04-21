@@ -234,7 +234,7 @@ function MetaSelect({
         className="mt-1 w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm font-bold text-slate-900 dark:text-white focus:outline-none focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all cursor-pointer"
       >
         {options.map((o) => (
-          <option key={o} value={o}>
+          <option key={o} value={o} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
             {o}
           </option>
         ))}

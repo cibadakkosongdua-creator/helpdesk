@@ -1,6 +1,9 @@
 "use client"
 
 import {
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
   BarChart3,
   Bell,
   CheckCircle2,
@@ -27,7 +30,7 @@ import {
 } from "lucide-react"
 import { useEffect, useMemo, useRef, useState } from "react"
 import type { AdminSession } from "@/lib/helpdesk/auth-service"
-import { exportFeedbacksCSV, exportTicketsCSV, printReport } from "@/lib/helpdesk/csv-export"
+import { exportAuditsCSV, exportFeedbacksCSV, exportTicketsCSV, printReport } from "@/lib/helpdesk/csv-export"
 import { useSettingsServices } from "@/hooks/use-settings-services"
 import { usePagination } from "@/hooks/use-pagination"
 import { PaginationControls } from "./pagination-controls"
@@ -51,6 +54,7 @@ import { AISummaryCard } from "./ai-summary-card"
 import { AdminSettings } from "./admin-settings"
 import { AnalyticsCharts } from "./analytics-charts"
 import { TicketDetailDialog } from "./ticket-detail-dialog"
+import { ConfirmDialog } from "./confirm-dialog"
 import type { ShowToastFn } from "./types"
 
 type Tab = "tickets" | "analytics" | "surveys" | "audit" | "settings"
@@ -80,6 +84,13 @@ export function AdminDashboard({
   const [departmentFilter, setDepartmentFilter] = useState<Department | "all">("all")
   const [serviceFilter, setServiceFilter] = useState<string>("all")
   const [rangeFilter, setRangeFilter] = useState<DateRange>("all")
+  const [auditSearch, setAuditSearch] = useState("")
+  const [auditDateFilter, setAuditDateFilter] = useState<DateRange>("all")
+  // sorting
+  const [sortField, setSortField] = useState<"code" | "createdAt" | "priority" | "status" | "name" | "service">("createdAt")
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc")
+  // bulk actions
+  const [selectedTickets, setSelectedTickets] = useState<Set<string>>(new Set())
   const prevTicketsRef = useRef<Ticket[]>([])
   const { isGranted, requestPermission, showNotification } = useBrowserNotification()
   const { playSound } = useSoundAlert()
@@ -204,7 +215,7 @@ export function AdminDashboard({
             ? now - 30 * 24 * 60 * 60 * 1000
             : 0
     const q = search.trim().toLowerCase()
-    return tickets.filter((t) => {
+    const filtered = tickets.filter((t) => {
       if (rangeStart && t.createdAt < rangeStart) return false
       if (statusFilter !== "all" && t.status !== statusFilter) return false
       if (priorityFilter !== "all" && t.priority !== priorityFilter) return false
@@ -216,7 +227,36 @@ export function AdminDashboard({
       }
       return true
     })
-  }, [tickets, rangeFilter, statusFilter, priorityFilter, departmentFilter, serviceFilter, search])
+
+    // Sort
+    const priorityOrder = { Urgent: 4, Tinggi: 3, Sedang: 2, Rendah: 1 }
+    const statusOrder = { Open: 3, "In Progress": 2, Resolved: 1 }
+
+    return [...filtered].sort((a, b) => {
+      let comparison = 0
+      switch (sortField) {
+        case "code":
+          comparison = a.code.localeCompare(b.code)
+          break
+        case "createdAt":
+          comparison = a.createdAt - b.createdAt
+          break
+        case "priority":
+          comparison = (priorityOrder[a.priority] || 0) - (priorityOrder[b.priority] || 0)
+          break
+        case "status":
+          comparison = (statusOrder[a.status] || 0) - (statusOrder[b.status] || 0)
+          break
+        case "name":
+          comparison = a.name.localeCompare(b.name)
+          break
+        case "service":
+          comparison = a.service.localeCompare(b.service)
+          break
+      }
+      return sortDirection === "asc" ? comparison : -comparison
+    })
+  }, [tickets, rangeFilter, statusFilter, priorityFilter, departmentFilter, serviceFilter, search, sortField, sortDirection])
 
   const filteredFeedbacks = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -244,6 +284,39 @@ export function AdminDashboard({
   })
   const paginatedFeedbacks = feedbackPagination.paginate(filteredFeedbacks)
 
+  // Pagination for audits
+  const filteredAudits = useMemo(() => {
+    const now = Date.now()
+    const rangeStart =
+      auditDateFilter === "today"
+        ? new Date(new Date().setHours(0, 0, 0, 0)).getTime()
+        : auditDateFilter === "7d"
+          ? now - 7 * 24 * 60 * 60 * 1000
+          : auditDateFilter === "30d"
+            ? now - 30 * 24 * 60 * 60 * 1000
+            : 0
+    const q = auditSearch.trim().toLowerCase()
+    return audits.filter((a) => {
+      if (rangeStart && a.createdAt < rangeStart) return false
+      if (q) {
+        const hay = `${a.actor} ${a.action} ${a.target} ${a.meta || ""}`.toLowerCase()
+        if (!hay.includes(q)) return false
+      }
+      return true
+    })
+  }, [audits, auditDateFilter, auditSearch])
+
+  const auditPagination = usePagination({
+    totalItems: filteredAudits.length,
+    pageSize: 20,
+  })
+  const paginatedAudits = auditPagination.paginate(filteredAudits)
+
+  // Reset audit page when filters change
+  useEffect(() => {
+    auditPagination.setCurrentPage(1)
+  }, [auditDateFilter, auditSearch])
+
   // Reset page when filters change
   useEffect(() => {
     ticketPagination.setCurrentPage(1)
@@ -253,8 +326,27 @@ export function AdminDashboard({
   }, [serviceFilter, search])
 
   const handleStatus = async (id: string, status: TicketStatus) => {
+    const ticket = tickets.find(t => t.id === id)
     await updateTicketStatus(id, status, admin?.name ?? "admin")
     showToast(`Status tiket diubah ke "${status}".`, "success")
+
+    // Send email notification to reporter
+    if (ticket?.reporterEmail) {
+      fetch("/api/email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "status-change",
+          data: {
+            ticketCode: ticket.code,
+            ticketId: ticket.id,
+            reporterName: ticket.name,
+            reporterEmail: ticket.reporterEmail,
+            newStatus: status,
+          },
+        }),
+      }).catch(() => {}) // Silent fail
+    }
   }
 
   const serviceName = (id: string) => settingsServices.find((s) => s.id === id)?.name ?? id
@@ -275,6 +367,75 @@ export function AdminDashboard({
     departmentFilter !== "all" ||
     serviceFilter !== "all" ||
     rangeFilter !== "all"
+
+  // Sort handler
+  const handleSort = (field: typeof sortField) => {
+    if (sortField === field) {
+      // Toggle direction
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc")
+    } else {
+      setSortField(field)
+      setSortDirection("desc") // Default to desc for new field
+    }
+  }
+
+  // Bulk action handlers
+  const toggleSelectAll = () => {
+    if (selectedTickets.size === paginatedTickets.length) {
+      setSelectedTickets(new Set())
+    } else {
+      setSelectedTickets(new Set(paginatedTickets.map(t => t.id)))
+    }
+  }
+
+  const toggleSelectTicket = (id: string) => {
+    const next = new Set(selectedTickets)
+    if (next.has(id)) {
+      next.delete(id)
+    } else {
+      next.add(id)
+    }
+    setSelectedTickets(next)
+  }
+
+  const handleBulkStatus = async (status: TicketStatus) => {
+    if (selectedTickets.size === 0) return
+    const count = selectedTickets.size
+    for (const id of selectedTickets) {
+      const ticket = tickets.find(t => t.id === id)
+      await updateTicketStatus(id, status, admin?.name ?? "admin")
+
+      // Send email notification to reporter
+      if (ticket?.reporterEmail) {
+        fetch("/api/email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            type: "status-change",
+            data: {
+              ticketCode: ticket.code,
+              ticketId: ticket.id,
+              reporterName: ticket.name,
+              reporterEmail: ticket.reporterEmail,
+              newStatus: status,
+            },
+          }),
+        }).catch(() => {}) // Silent fail
+      }
+    }
+    setSelectedTickets(new Set())
+    showToast(`${count} tiket berhasil diubah ke "${status}".`, "success")
+  }
+
+  const handleBulkDelete = async () => {
+    if (selectedTickets.size === 0) return
+    const count = selectedTickets.size
+    for (const id of selectedTickets) {
+      await deleteTicket(id, admin?.name ?? "Admin")
+    }
+    setSelectedTickets(new Set())
+    showToast(`${count} tiket berhasil dihapus.`, "success")
+  }
 
   return (
     <div className="w-full animate-in fade-in slide-in-from-bottom-8 duration-700 space-y-6">
@@ -383,6 +544,15 @@ export function AdminDashboard({
             <button
               onClick={() => exportFeedbacksCSV(filteredFeedbacks, serviceName)}
               className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-sm transition-colors"
+            >
+              <FileDown className="w-3.5 h-3.5" /> Export CSV
+            </button>
+          )}
+          {tab === "audit" && (
+            <button
+              onClick={() => exportAuditsCSV(filteredAudits)}
+              disabled={filteredAudits.length === 0}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold shadow-sm transition-colors"
             >
               <FileDown className="w-3.5 h-3.5" /> Export CSV
             </button>
@@ -511,11 +681,57 @@ export function AdminDashboard({
           />
         ) : (
           <div className="space-y-4">
+            {/* Bulk Actions Bar */}
+            {selectedTickets.size > 0 && (
+              <div className="flex items-center gap-3 px-4 py-3 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 rounded-xl">
+                <span className="text-sm font-semibold text-blue-700 dark:text-blue-300">
+                  {selectedTickets.size} dipilih
+                </span>
+                <div className="flex items-center gap-2 ml-auto">
+                  <select
+                    onChange={(e) => {
+                      if (e.target.value) {
+                        handleBulkStatus(e.target.value as TicketStatus)
+                        e.target.value = ""
+                      }
+                    }}
+                    className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 text-xs font-bold text-slate-700 dark:text-slate-200"
+                  >
+                    <option value="">Ubah Status...</option>
+                    <option value="Open">Open</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Resolved">Resolved</option>
+                  </select>
+                  <ConfirmDialog
+                    title={`Hapus ${selectedTickets.size} Tiket?`}
+                    description="Tiket yang dipilih akan dihapus secara permanen beserta seluruh balasan. Tindakan ini tidak dapat dibatalkan."
+                    confirmLabel="Hapus"
+                    onConfirm={handleBulkDelete}
+                  >
+                    <button className="px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-500 text-white text-xs font-bold">
+                      Hapus
+                    </button>
+                  </ConfirmDialog>
+                  <button
+                    onClick={() => setSelectedTickets(new Set())}
+                    className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300 text-xs font-bold"
+                  >
+                    Batal
+                  </button>
+                </div>
+              </div>
+            )}
             <TicketsPanel
               tickets={paginatedTickets}
               onStatus={handleStatus}
               onOpen={setOpenTicket}
               serviceName={serviceName}
+              sortField={sortField}
+              sortDirection={sortDirection}
+              onSort={handleSort}
+              selectedTickets={selectedTickets}
+              onToggleSelect={toggleSelectTicket}
+              onToggleSelectAll={toggleSelectAll}
             />
             <PaginationControls
               pagination={ticketPagination.pagination}
@@ -526,7 +742,7 @@ export function AdminDashboard({
               onPage={ticketPagination.goToPage}
             />
           </div>
-        ))
+        ))}
 
       {tab === "analytics" && <AnalyticsCharts tickets={tickets} feedbacks={feedbacks} services={settingsServices} />}
 
@@ -551,9 +767,80 @@ export function AdminDashboard({
               onPage={feedbackPagination.goToPage}
             />
           </div>
-        ))
+        ))}
 
-      {tab === "audit" && <AuditPanel audits={audits} />}
+      {tab === "audit" && (
+        <div className="space-y-4">
+          {/* Audit Filters */}
+          <div className="flex flex-col md:flex-row md:items-center gap-3">
+            <div className="flex items-center gap-2 flex-1">
+              <div className="relative flex-1 max-w-xs">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Cari aktivitas..."
+                  value={auditSearch}
+                  onChange={(e) => setAuditSearch(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/40 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                />
+              </div>
+              <FilterChip
+                icon={Clock}
+                label="Waktu"
+                value={auditDateFilter}
+                options={[
+                  { value: "all", label: "Semua" },
+                  { value: "today", label: "Hari ini" },
+                  { value: "7d", label: "7 hari" },
+                  { value: "30d", label: "30 hari" },
+                ]}
+                onChange={(v) => setAuditDateFilter(v as DateRange)}
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-slate-500 dark:text-slate-400">
+                {filteredAudits.length} log
+              </span>
+            </div>
+          </div>
+
+          {/* Audit Content */}
+          {filteredAudits.length === 0 ? (
+            <EmptyState
+              icon={Shield}
+              title={auditSearch || auditDateFilter !== "all" ? "Tidak ada log yang cocok" : "Belum ada aktivitas audit"}
+              description={
+                auditSearch || auditDateFilter !== "all"
+                  ? "Coba kurangi filter untuk melihat lebih banyak log."
+                  : "Setiap perubahan status, balasan, dan edit data akan tercatat di sini."
+              }
+            />
+          ) : (
+            <>
+              <AuditPanel audits={paginatedAudits} totalAudits={filteredAudits.length} />
+              <PaginationControls
+                pagination={auditPagination.pagination}
+                onFirst={auditPagination.firstPage}
+                onPrev={auditPagination.prevPage}
+                onNext={auditPagination.nextPage}
+                onLast={auditPagination.lastPage}
+                onPage={auditPagination.goToPage}
+              />
+            </>
+          )}
+
+          {/* Retention Info */}
+          <div className="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-xl p-3 flex items-start gap-2">
+            <Shield className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+            <div className="text-xs text-amber-700 dark:text-amber-300">
+              <p className="font-semibold">Audit Log Retention</p>
+              <p className="text-amber-600 dark:text-amber-400 mt-0.5">
+                Log aktivitas disimpan secara permanen untuk keperluan audit dan keamanan. Tidak dapat dihapus.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {tab === "settings" && <AdminSettings showToast={showToast} />}
 
@@ -606,7 +893,7 @@ function FilterChip({
         aria-label={label}
       >
         {options.map((o) => (
-          <option key={o.value} value={o.value}>
+          <option key={o.value} value={o.value} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
             {o.label}
           </option>
         ))}
@@ -715,24 +1002,63 @@ function TicketsPanel({
   onStatus,
   onOpen,
   serviceName,
+  sortField,
+  sortDirection,
+  onSort,
+  selectedTickets,
+  onToggleSelect,
+  onToggleSelectAll,
 }: {
   tickets: Ticket[]
   onStatus: (id: string, status: TicketStatus) => void
   onOpen: (t: Ticket) => void
   serviceName: (id: string) => string
+  sortField: "code" | "createdAt" | "priority" | "status" | "name" | "service"
+  sortDirection: "asc" | "desc"
+  onSort: (field: typeof sortField) => void
+  selectedTickets: Set<string>
+  onToggleSelect: (id: string) => void
+  onToggleSelectAll: () => void
 }) {
+  const SortIcon = ({ field }: { field: typeof sortField }) => {
+    if (sortField !== field) return <ArrowUpDown className="w-3 h-3 opacity-40" />
+    return sortDirection === "asc" ? (
+      <ArrowUp className="w-3 h-3 text-blue-600" />
+    ) : (
+      <ArrowDown className="w-3 h-3 text-blue-600" />
+    )
+  }
+
   return (
     <div className="space-y-3">
       {/* Desktop table */}
       <div className="hidden md:block bg-white dark:bg-slate-900/40 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 rounded-3xl overflow-x-auto">
-        <table className="w-full text-sm min-w-[800px]">
+        <table className="w-full text-sm min-w-[900px]">
           <thead>
             <tr className="bg-slate-50/70 dark:bg-slate-800/40 text-left text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              <th className="px-5 py-3">Kode</th>
-              <th className="px-5 py-3">Pelapor</th>
-              <th className="px-5 py-3">Layanan</th>
-              <th className="px-5 py-3">Prioritas</th>
-              <th className="px-5 py-3">Status</th>
+              <th className="px-3 py-3 w-10">
+                <input
+                  type="checkbox"
+                  checked={selectedTickets.size === tickets.length && tickets.length > 0}
+                  onChange={onToggleSelectAll}
+                  className="w-4 h-4 rounded border-slate-300 dark:border-slate-600"
+                />
+              </th>
+              <th className="px-5 py-3 cursor-pointer hover:text-slate-700 dark:hover:text-slate-200" onClick={() => onSort("code")}>
+                <div className="flex items-center gap-1">Kode <SortIcon field="code" /></div>
+              </th>
+              <th className="px-5 py-3 cursor-pointer hover:text-slate-700 dark:hover:text-slate-200" onClick={() => onSort("name")}>
+                <div className="flex items-center gap-1">Pelapor <SortIcon field="name" /></div>
+              </th>
+              <th className="px-5 py-3 cursor-pointer hover:text-slate-700 dark:hover:text-slate-200" onClick={() => onSort("service")}>
+                <div className="flex items-center gap-1">Layanan <SortIcon field="service" /></div>
+              </th>
+              <th className="px-5 py-3 cursor-pointer hover:text-slate-700 dark:hover:text-slate-200" onClick={() => onSort("priority")}>
+                <div className="flex items-center gap-1">Prioritas <SortIcon field="priority" /></div>
+              </th>
+              <th className="px-5 py-3 cursor-pointer hover:text-slate-700 dark:hover:text-slate-200" onClick={() => onSort("status")}>
+                <div className="flex items-center gap-1">Status <SortIcon field="status" /></div>
+              </th>
               <th className="px-5 py-3 text-right">Aksi</th>
             </tr>
           </thead>
@@ -741,8 +1067,16 @@ function TicketsPanel({
               <tr
                 key={t.id}
                 onClick={() => onOpen(t)}
-                className="border-t border-slate-100 dark:border-white/5 hover:bg-slate-50/60 dark:hover:bg-white/5 transition-colors cursor-pointer"
+                className={`border-t border-slate-100 dark:border-white/5 hover:bg-slate-50/60 dark:hover:bg-white/5 transition-colors cursor-pointer ${selectedTickets.has(t.id) ? "bg-blue-50/50 dark:bg-blue-500/5" : ""}`}
               >
+                <td className="px-3 py-4" onClick={(e) => e.stopPropagation()}>
+                  <input
+                    type="checkbox"
+                    checked={selectedTickets.has(t.id)}
+                    onChange={() => onToggleSelect(t.id)}
+                    className="w-4 h-4 rounded border-slate-300 dark:border-slate-600"
+                  />
+                </td>
                 <td className="px-5 py-4">
                   <div className="font-mono font-bold text-slate-900 dark:text-white">{t.code}</div>
                   <div className="flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400 mt-1">
@@ -933,26 +1267,17 @@ function SurveysPanel({
   )
 }
 
-function AuditPanel({ audits }: { audits: AuditLog[] }) {
-  if (audits.length === 0) {
-    return (
-      <EmptyState
-        icon={Shield}
-        title="Belum ada aktivitas audit"
-        description="Setiap perubahan status, balasan, dan edit data akan tercatat di sini."
-      />
-    )
-  }
+function AuditPanel({ audits, totalAudits }: { audits: AuditLog[]; totalAudits: number }) {
   return (
     <div className="bg-white dark:bg-slate-900/40 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 rounded-3xl overflow-hidden">
       <div className="flex items-center gap-2 px-5 py-4 border-b border-slate-200/60 dark:border-white/5">
         <History className="w-4 h-4 text-slate-500" />
         <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-          Log Aktivitas Terakhir ({audits.length})
+          Log Aktivitas Terakhir ({totalAudits})
         </h3>
       </div>
       <ul className="divide-y divide-slate-100 dark:divide-white/5">
-        {audits.slice(0, 50).map((a) => (
+        {audits.map((a) => (
           <li key={a.id} className="flex items-start gap-3 px-5 py-3 text-sm">
             <FileText className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
             <div className="flex-1 min-w-0">
