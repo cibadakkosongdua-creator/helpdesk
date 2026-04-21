@@ -220,3 +220,6 @@ export const saveMaintenanceSchedules = (maintenanceSchedules: MaintenanceSchedu
 
 export const saveReplyTemplates = (replyTemplates: ReplyTemplate[]) =>
   saveSettings({ replyTemplates })
+
+export const saveWellness = (wellness: WellnessConfig) =>
+  saveSettings({ wellness })

@@ -12,7 +12,7 @@ export type EmailTemplate = {
 // Email branding configuration
 const EMAIL_CONFIG = {
   schoolName: "SDN 02 Cibadak",
-  schoolAddress: "Jl. Kebon Pal 2 Cibadak, Sukabumi, Jawa Barat",
+  schoolAddress: "Jl. Kebon Pala 2 Cibadak, Sukabumi, Jawa Barat",
   schoolPhone: "(0266) 532253",
   schoolEmail: "info@sdn02cibadak.sch.id",
   schoolWebsite: "https://sdn02cibadak.sch.id",

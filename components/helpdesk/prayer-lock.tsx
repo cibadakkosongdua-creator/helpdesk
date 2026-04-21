@@ -2,7 +2,7 @@
 
 import { Clock, Lock, Moon, Sun, Sunset, X } from "lucide-react"
 import { useEffect, useState } from "react"
-import { getPrayerState, getTodayPrayerTimes, PRAYER_SCHEDULE, type PrayerName, type PrayerState, formatTimeRemaining, shouldShowReminder } from "@/lib/helpdesk/prayer-times"
+import { getPrayerState, getTodayPrayerTimes, getTodayPrayerTimesAsync, getCurrentSchedule, type PrayerName, type PrayerState, formatTimeRemaining, shouldShowReminder } from "@/lib/helpdesk/prayer-times"
 
 const PRAYER_ICONS: Record<PrayerName, typeof Sun> = {
   Subuh: Moon,
@@ -32,6 +32,12 @@ export function PrayerLock({ enabled }: PrayerLockProps) {
   const [reminderMinutes, setReminderMinutes] = useState(0)
   const [countdown, setCountdown] = useState({ minutes: 0, seconds: 0 })
 
+  // Fetch prayer times from API on mount
+  useEffect(() => {
+    if (!enabled) return
+    getTodayPrayerTimesAsync().catch(() => {})
+  }, [enabled])
+
   useEffect(() => {
     if (!enabled) return
 
@@ -48,9 +54,10 @@ export function PrayerLock({ enabled }: PrayerLockProps) {
     }
 
     check()
-    const interval = setInterval(check, 30000) // Check every 30 seconds
+    // Check every 1 second when locked, 30 seconds when not locked
+    const interval = setInterval(check, state.isLocked ? 1000 : 30000)
     return () => clearInterval(interval)
-  }, [enabled])
+  }, [enabled, state.isLocked])
 
   // Countdown timer
   useEffect(() => {
@@ -62,7 +69,7 @@ export function PrayerLock({ enabled }: PrayerLockProps) {
       const prayerTimes = getTodayPrayerTimes()
       const prayer = prayerTimes.find(p => p.name === state.current)
       if (prayer) {
-        const schedule = PRAYER_SCHEDULE[prayer.name]
+        const schedule = getCurrentSchedule()[prayer.name]
         const endTimestamp = prayer.timestamp + schedule.lockDuration * 60 * 1000
         const remainingMs = Math.max(0, endTimestamp - currentMs)
         const mins = Math.floor(remainingMs / 60000)
