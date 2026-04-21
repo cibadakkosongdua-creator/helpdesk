@@ -6,7 +6,6 @@ import {
   Calendar,
   ChevronDown,
   Globe,
-  Heart,
   Mail,
   MessageSquare,
   Minus,
@@ -30,7 +29,6 @@ import {
   saveAnnouncement,
   saveMaintenanceSchedules,
   saveReplyTemplates,
-  saveWellness,
   type AppSettings,
   type EmergencyContact,
   type FaqItem,
@@ -40,13 +38,12 @@ import {
   type AnnouncementConfig,
   type MaintenanceSchedule,
   type ReplyTemplate,
-  type WellnessConfig,
   DEFAULT_SETTINGS,
 } from "@/lib/helpdesk/settings-service"
 import type { ShowToastFn } from "./types"
 import { ConfirmDialog } from "./confirm-dialog"
 
-type Section = "contacts" | "portal" | "faq" | "admin-emails" | "services" | "socials" | "announcement" | "maintenance" | "templates" | "wellness"
+type Section = "contacts" | "portal" | "faq" | "admin-emails" | "services" | "socials" | "announcement" | "maintenance" | "templates"
 
 const SECTIONS: { id: Section; label: string; icon: LucideIcon }[] = [
   { id: "contacts", label: "Kontak Darurat", icon: AlertTriangle },
@@ -58,7 +55,6 @@ const SECTIONS: { id: Section; label: string; icon: LucideIcon }[] = [
   { id: "admin-emails", label: "Admin Email", icon: Shield },
   { id: "services", label: "Daftar Layanan", icon: Settings },
   { id: "socials", label: "Sosial Media", icon: Globe },
-  { id: "wellness", label: "Kesejahteraan", icon: Heart },
 ]
 
 export function AdminSettings({ showToast }: { showToast: ShowToastFn }) {
@@ -84,7 +80,6 @@ export function AdminSettings({ showToast }: { showToast: ShowToastFn }) {
         case "services": await saveServices(settings.services); break
         case "socials": await saveSocialLinks(settings.socialLinks); break
         case "templates": await saveReplyTemplates(settings.replyTemplates ?? []); break
-        case "wellness": await saveWellness(settings.wellness ?? { prayerLockEnabled: true, healthToastEnabled: true }); break
       }
       showToast("Pengaturan berhasil disimpan.", "success")
     } catch {
@@ -157,9 +152,6 @@ export function AdminSettings({ showToast }: { showToast: ShowToastFn }) {
         )}
         {activeSection === "templates" && (
           <TemplatesSection templates={settings.replyTemplates ?? []} onChange={(t) => update({ replyTemplates: t })} onSave={() => handleSave("templates")} saving={saving} />
-        )}
-        {activeSection === "wellness" && (
-          <WellnessSection wellness={settings.wellness ?? { prayerLockEnabled: true, healthToastEnabled: true }} onChange={(w) => update({ wellness: w })} onSave={() => handleSave("wellness")} saving={saving} />
         )}
       </div>
     </div>
@@ -839,88 +831,6 @@ function TemplatesSection({
       )}
 
       <ActionBar onAdd={add} addLabel="Tambah Template" onSave={onSave} saving={saving} />
-    </div>
-  )
-}
-
-/* ---------- Wellness Section ---------- */
-
-function WellnessSection({
-  wellness,
-  onChange,
-  onSave,
-  saving,
-}: {
-  wellness: WellnessConfig
-  onChange: (w: WellnessConfig) => void
-  onSave: () => void
-  saving: boolean
-}) {
-  return (
-    <div>
-      <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">Fitur Kesejahteraan</h3>
-      <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">Pengaturan untuk fitur kesejahteraan pengguna: pengingat sholat dan kesehatan.</p>
-
-      <div className="space-y-4">
-        {/* Prayer Lock */}
-        <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200/60 dark:border-white/5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
-                <Bell className="w-5 h-5" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-slate-900 dark:text-white">Kunci Waktu Sholat</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Tampilkan pengingat dan kunci layar saat waktu sholat</p>
-              </div>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={wellness.prayerLockEnabled}
-                onChange={(e) => onChange({ ...wellness, prayerLockEnabled: e.target.checked })}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-blue-600"></div>
-            </label>
-          </div>
-        </div>
-
-        {/* Health Toast */}
-        <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200/60 dark:border-white/5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-cyan-100 dark:bg-cyan-500/20 flex items-center justify-center text-cyan-600 dark:text-cyan-400">
-                <Heart className="w-5 h-5" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-slate-900 dark:text-white">Pengingat Kesehatan</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Ingatkan user untuk istirahat mata, minum air, dan berdiri</p>
-              </div>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={wellness.healthToastEnabled}
-                onChange={(e) => onChange({ ...wellness, healthToastEnabled: e.target.checked })}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-blue-600"></div>
-            </label>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex justify-end mt-6">
-        <button
-          onClick={onSave}
-          disabled={saving}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold rounded-xl shadow-lg shadow-blue-500/25 transition-all disabled:opacity-50"
-        >
-          <Save className="w-4 h-4" />
-          {saving ? "Menyimpan..." : "Simpan Pengaturan"}
-        </button>
-      </div>
     </div>
   )
 }
