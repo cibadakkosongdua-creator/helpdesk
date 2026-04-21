@@ -1,6 +1,18 @@
 import { Resend } from "resend"
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+// Lazy initialize Resend client to avoid build error when API key is missing
+let resendClient: Resend | null = null
+
+function getResendClient(): Resend {
+  if (!resendClient) {
+    const apiKey = process.env.RESEND_API_KEY
+    if (!apiKey) {
+      throw new Error("RESEND_API_KEY environment variable is not set")
+    }
+    resendClient = new Resend(apiKey)
+  }
+  return resendClient
+}
 
 export type EmailTemplate = {
   to: string | string[]
@@ -64,7 +76,7 @@ const emailFooter = `
  */
 export async function sendEmail({ to, subject, html, text }: EmailTemplate) {
   try {
-    const { data, error } = await resend.emails.send({
+    const { data, error } = await getResendClient().emails.send({
       from: `Helpdesk ${EMAIL_CONFIG.schoolName} <noreply@helpdesk.sdn02cibadak.sch.id>`,
       to: Array.isArray(to) ? to : [to],
       subject,
