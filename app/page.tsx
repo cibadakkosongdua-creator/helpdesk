@@ -7,15 +7,17 @@ import { AdminDashboard } from "@/components/helpdesk/admin-dashboard"
 import { AdminLogin } from "@/components/helpdesk/admin-login"
 import { ChatWidget } from "@/components/helpdesk/chat-widget"
 import CommandPalette from "@/components/helpdesk/command-palette"
+import { HealthToast } from "@/components/helpdesk/health-toast"
 import { HomeView } from "@/components/helpdesk/home-view"
 import { Navbar } from "@/components/helpdesk/navbar"
 import OfflineBanner from "@/components/helpdesk/offline-banner"
+import { PrayerLock } from "@/components/helpdesk/prayer-lock"
 import { SurveyView } from "@/components/helpdesk/survey-view"
 import { TicketView } from "@/components/helpdesk/ticket-view"
 import { Toast, type ToastState } from "@/components/helpdesk/toast"
 import type { View } from "@/components/helpdesk/types"
 import { signOut as fbSignOut, subscribeAuth, toAdminSession, setFirestoreAdminEmails, type AuthSession } from "@/lib/helpdesk/auth-service"
-import { subscribeSettings, type SocialLink } from "@/lib/helpdesk/settings-service"
+import { subscribeSettings, type SocialLink, type WellnessConfig, DEFAULT_SETTINGS } from "@/lib/helpdesk/settings-service"
 import { subscribeTickets, type Ticket } from "@/lib/helpdesk/firestore-service"
 
 export default function Page() {
@@ -27,6 +29,7 @@ export default function Page() {
   const [unreadCount, setUnreadCount] = useState(0)
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
   const [socialLinks, setSocialLinks] = useState<SocialLink[]>([])
+  const [wellness, setWellness] = useState<WellnessConfig>(DEFAULT_SETTINGS.wellness ?? { prayerLockEnabled: true, healthToastEnabled: true })
   const isAdmin = auth?.role === "admin"
 
   useEffect(() => {
@@ -34,11 +37,12 @@ export default function Page() {
     return () => unsub()
   }, [])
 
-  // Sync Firestore admin emails to auth-service and get social links
+  // Sync Firestore admin emails to auth-service and get social links + wellness
   useEffect(() => {
     const unsub = subscribeSettings((s) => {
       if (s.adminEmails.length > 0) setFirestoreAdminEmails(s.adminEmails)
       setSocialLinks(s.socialLinks)
+      if (s.wellness) setWellness(s.wellness)
     })
     return () => unsub()
   }, [])
@@ -138,6 +142,10 @@ export default function Page() {
       </main>
 
       <ChatWidget />
+
+      {/* Wellness Features */}
+      <PrayerLock enabled={wellness.prayerLockEnabled} />
+      <HealthToast enabled={wellness.healthToastEnabled} />
 
       {/* Footer Links */}
       <footer className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-28 md:pb-8 pt-8 border-t border-slate-200/60 dark:border-white/5">

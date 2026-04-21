@@ -63,6 +63,11 @@ export type ReplyTemplate = {
   content: string
 }
 
+export type WellnessConfig = {
+  prayerLockEnabled: boolean
+  healthToastEnabled: boolean
+}
+
 export type AppSettings = {
   emergencyContacts: EmergencyContact[]
   serviceStatus: Record<string, ServiceStatus>
@@ -70,6 +75,7 @@ export type AppSettings = {
   adminEmails: string[]
   services: ServiceConfig[]
   socialLinks: SocialLink[]
+  wellness?: WellnessConfig
   publicStats?: PublicStats
   announcement?: AnnouncementConfig
   maintenanceSchedules?: MaintenanceSchedule[]
@@ -85,6 +91,10 @@ export const DEFAULT_SETTINGS: AppSettings = {
   adminEmails: [],
   services: SERVICES_FALLBACK.map(({ id, name, url, description }) => ({ id, name, url, description })),
   socialLinks: SOCIAL_LINKS_FALLBACK,
+  wellness: {
+    prayerLockEnabled: true,
+    healthToastEnabled: true,
+  },
 }
 
 /* ---------- Firestore ---------- */
@@ -201,6 +211,9 @@ export const saveServices = async (services: ServiceConfig[]) => {
 
 export const saveSocialLinks = (socialLinks: SocialLink[]) =>
   saveSettings({ socialLinks })
+
+export const saveWellness = (wellness: WellnessConfig) =>
+  saveSettings({ wellness })
 
 export const saveAnnouncement = (announcement: AnnouncementConfig) =>
   saveSettings({ announcement })
