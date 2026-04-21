@@ -29,6 +29,8 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import type { AdminSession } from "@/lib/helpdesk/auth-service"
 import { exportFeedbacksCSV, exportTicketsCSV, printReport } from "@/lib/helpdesk/csv-export"
 import { useSettingsServices } from "@/hooks/use-settings-services"
+import { usePagination } from "@/hooks/use-pagination"
+import { PaginationControls } from "./pagination-controls"
 import {
   deleteTicket,
   subscribeAuditLogs,
@@ -227,6 +229,28 @@ export function AdminDashboard({
       return true
     })
   }, [feedbacks, serviceFilter, search])
+
+  // Pagination for tickets
+  const ticketPagination = usePagination({
+    totalItems: filteredTickets.length,
+    pageSize: 10,
+  })
+  const paginatedTickets = ticketPagination.paginate(filteredTickets)
+
+  // Pagination for feedbacks
+  const feedbackPagination = usePagination({
+    totalItems: filteredFeedbacks.length,
+    pageSize: 10,
+  })
+  const paginatedFeedbacks = feedbackPagination.paginate(filteredFeedbacks)
+
+  // Reset page when filters change
+  useEffect(() => {
+    ticketPagination.setCurrentPage(1)
+  }, [statusFilter, priorityFilter, departmentFilter, serviceFilter, rangeFilter, search])
+  useEffect(() => {
+    feedbackPagination.setCurrentPage(1)
+  }, [serviceFilter, search])
 
   const handleStatus = async (id: string, status: TicketStatus) => {
     await updateTicketStatus(id, status, admin?.name ?? "admin")
@@ -486,13 +510,23 @@ export function AdminDashboard({
             }
           />
         ) : (
-          <TicketsPanel
-            tickets={filteredTickets}
-            onStatus={handleStatus}
-            onOpen={setOpenTicket}
-            serviceName={serviceName}
-          />
-        ))}
+          <div className="space-y-4">
+            <TicketsPanel
+              tickets={paginatedTickets}
+              onStatus={handleStatus}
+              onOpen={setOpenTicket}
+              serviceName={serviceName}
+            />
+            <PaginationControls
+              pagination={ticketPagination.pagination}
+              onFirst={ticketPagination.firstPage}
+              onPrev={ticketPagination.prevPage}
+              onNext={ticketPagination.nextPage}
+              onLast={ticketPagination.lastPage}
+              onPage={ticketPagination.goToPage}
+            />
+          </div>
+        ))
 
       {tab === "analytics" && <AnalyticsCharts tickets={tickets} feedbacks={feedbacks} services={settingsServices} />}
 
@@ -506,8 +540,18 @@ export function AdminDashboard({
             description="Jawaban survei IKM akan muncul di sini secara real-time dari Firestore."
           />
         ) : (
-          <SurveysPanel feedbacks={filteredFeedbacks} serviceName={serviceName} />
-        ))}
+          <div className="space-y-4">
+            <SurveysPanel feedbacks={paginatedFeedbacks} serviceName={serviceName} />
+            <PaginationControls
+              pagination={feedbackPagination.pagination}
+              onFirst={feedbackPagination.firstPage}
+              onPrev={feedbackPagination.prevPage}
+              onNext={feedbackPagination.nextPage}
+              onLast={feedbackPagination.lastPage}
+              onPage={feedbackPagination.goToPage}
+            />
+          </div>
+        ))
 
       {tab === "audit" && <AuditPanel audits={audits} />}
 

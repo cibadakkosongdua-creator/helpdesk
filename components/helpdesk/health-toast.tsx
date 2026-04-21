@@ -21,31 +21,31 @@ export const HEALTH_REMINDERS: HealthReminder[] = [
     id: "eye",
     type: "eye",
     title: "Istirahatkan Mata",
-    message: "Lihat objek jauh selama 20 detik. Aturan 20-20-20: setiap 20 menit, lihat 20 kaki jauhnya, selama 20 detik.",
+    message: "Anda sudah 20 menit di depan layar. Lihat objek jauh selama 20 detik untuk istirahat mata.",
     icon: Eye,
     color: "text-blue-600 dark:text-blue-400",
     bgColor: "bg-blue-100 dark:bg-blue-500/20",
-    interval: 20, // Muncul setiap 20 menit
+    interval: 20, // Muncul setelah 20 menit di web
   },
   {
     id: "stand",
     type: "stand",
     title: "Waktunya Berdiri",
-    message: "Berdiri dan renggangkan badan. Hindari duduk terlalu lama untuk kesehatan.",
+    message: "Anda sudah 45 menit duduk. Berdiri dan renggangkan badan untuk kesehatan.",
     icon: Footprints,
     color: "text-emerald-600 dark:text-emerald-400",
     bgColor: "bg-emerald-100 dark:bg-emerald-500/20",
-    interval: 30, // Muncul setiap 30 menit
+    interval: 45, // Muncul setelah 45 menit di web
   },
   {
     id: "water",
     type: "water",
     title: "Waktunya Minum Air",
-    message: "Minum segelas air putih untuk menjaga hidrasi dan konsentrasi.",
+    message: "Anda sudah 60 menit di depan layar. Minum air putih untuk menjaga hidrasi.",
     icon: Droplets,
     color: "text-cyan-600 dark:text-cyan-400",
     bgColor: "bg-cyan-100 dark:bg-cyan-500/20",
-    interval: 45, // Muncul setiap 45 menit
+    interval: 60, // Muncul setelah 60 menit di web
   },
 ]
 
@@ -53,110 +53,53 @@ type HealthToastProps = {
   enabled: boolean
 }
 
-const STORAGE_KEY = "helpdesk_health_reminders"
-
-type ReminderState = {
-  [key: string]: {
-    lastShown: number
-    dismissed: boolean
-  }
-}
-
 export function HealthToast({ enabled }: HealthToastProps) {
   const [currentReminder, setCurrentReminder] = useState<HealthReminder | null>(null)
   const [isVisible, setIsVisible] = useState(false)
-  const [states, setStates] = useState<ReminderState>(() => {
-    if (typeof window === "undefined") return {}
-    const saved = localStorage.getItem(STORAGE_KEY)
-    return saved ? JSON.parse(saved) : {}
-  })
+  const [sessionStart] = useState(Date.now()) // Track when user started session
+  const [shownReminders, setShownReminders] = useState<Set<string>>(new Set())
 
   const showReminder = useCallback((reminder: HealthReminder) => {
     setCurrentReminder(reminder)
     setIsVisible(true)
-
-    // Update state
-    setStates(prev => {
-      const next = {
-        ...prev,
-        [reminder.id]: {
-          lastShown: Date.now(),
-          dismissed: false,
-        },
-      }
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
-      return next
-    })
+    setShownReminders(prev => new Set(prev).add(reminder.id))
   }, [])
 
-  const dismissReminder = (snooze: boolean = false) => {
+  const dismissReminder = () => {
     setIsVisible(false)
-
-    if (snooze && currentReminder) {
-      // Snooze: remind again in 5 minutes
-      setStates(prev => {
-        const next = {
-          ...prev,
-          [currentReminder.id]: {
-            lastShown: Date.now() - (currentReminder.interval - 5) * 60 * 1000,
-            dismissed: false,
-          },
-        }
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
-        return next
-      })
-    }
-    // Normal dismiss: reset timer
-
     setTimeout(() => setCurrentReminder(null), 300)
   }
 
   useEffect(() => {
     if (!enabled) return
 
-    const checkReminders = () => {
+    const checkSessionTime = () => {
       const now = Date.now()
+      const sessionMinutes = (now - sessionStart) / 60000
 
+      // Check each reminder based on session time
       for (const reminder of HEALTH_REMINDERS) {
-        const state = states[reminder.id]
-        const intervalMs = reminder.interval * 60 * 1000
-
-        // Check if should show
-        if (!state || now - state.lastShown >= intervalMs) {
-          // Don't show if another reminder is visible
-          if (!isVisible && !currentReminder) {
-            showReminder(reminder)
-            break
-          }
+        // Only show if not already shown and session time reached
+        if (
+          !shownReminders.has(reminder.id) &&
+          sessionMinutes >= reminder.interval &&
+          !isVisible &&
+          !currentReminder
+        ) {
+          showReminder(reminder)
+          break // Show one at a time
         }
       }
     }
 
     // Check every minute
-    const interval = setInterval(checkReminders, 60000)
-    checkReminders() // Initial check
+    const interval = setInterval(checkSessionTime, 60000)
+    checkSessionTime() // Initial check
 
     return () => clearInterval(interval)
-  }, [enabled, states, isVisible, currentReminder, showReminder])
+  }, [enabled, sessionStart, shownReminders, isVisible, currentReminder, showReminder])
 
-  // Reset dismissed states on new session
-  useEffect(() => {
-    const sessionKey = "helpdesk_health_session"
-    const currentSession = sessionStorage.getItem(sessionKey)
-
-    if (!currentSession) {
-      sessionStorage.setItem(sessionKey, "active")
-      // Clear dismissed states but keep lastShown times
-      setStates(prev => {
-        const next: ReminderState = {}
-        for (const [key, value] of Object.entries(prev)) {
-          next[key] = { lastShown: value.lastShown, dismissed: false }
-        }
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
-        return next
-      })
-    }
-  }, [])
+  // No need for session reset - each page load is fresh session
 
   if (!enabled || !isVisible || !currentReminder) return null
 
@@ -173,7 +116,7 @@ export function HealthToast({ enabled }: HealthToastProps) {
             <div className="flex items-center justify-between gap-2">
               <h4 className="font-bold text-sm text-slate-900 dark:text-white">{currentReminder.title}</h4>
               <button
-                onClick={() => dismissReminder(false)}
+                onClick={dismissReminder}
                 className="p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400"
               >
                 <X className="w-4 h-4" />
@@ -182,24 +125,15 @@ export function HealthToast({ enabled }: HealthToastProps) {
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
               {currentReminder.message}
             </p>
-            <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1">
-              Pengingat ini muncul setiap {currentReminder.interval} menit
-            </p>
           </div>
         </div>
 
         <div className="flex gap-2 mt-3">
           <button
-            onClick={() => dismissReminder(true)}
-            className="flex-1 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-white/10 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
-          >
-            Ingatkan Lagi
-          </button>
-          <button
-            onClick={() => dismissReminder(false)}
+            onClick={dismissReminder}
             className={`flex-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-white transition-colors ${currentReminder.bgColor.replace("100", "500").replace("/20", "")}`}
           >
-            OK
+            OK, Mengerti
           </button>
         </div>
       </div>
