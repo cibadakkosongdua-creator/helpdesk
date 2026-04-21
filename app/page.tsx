@@ -26,11 +26,20 @@ export default function Page() {
   const currentView: View = pathname === "/lapor" ? "/lapor" : pathname === "/survei" ? "/survei" : pathname === "/admin" ? "/admin" : "/"
   const [toast, setToast] = useState<ToastState>({ show: false, message: "", type: "success" })
   const [auth, setAuth] = useState<AuthSession | null>(null)
+  const [mounted, setMounted] = useState(false)
+  const [showPreloader, setShowPreloader] = useState(true)
   const [unreadCount, setUnreadCount] = useState(0)
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
   const [socialLinks, setSocialLinks] = useState<SocialLink[]>([])
   const [wellness, setWellness] = useState<WellnessConfig>(DEFAULT_SETTINGS.wellness ?? { prayerLockEnabled: true, healthToastEnabled: true })
   const isAdmin = auth?.role === "admin"
+
+  // Handle mount and preloader
+  useEffect(() => {
+    setMounted(true)
+    const timer = setTimeout(() => setShowPreloader(false), 1200)
+    return () => clearTimeout(timer)
+  }, [])
 
   useEffect(() => {
     const unsub = subscribeAuth((s) => setAuth(s))
@@ -109,20 +118,25 @@ export default function Page() {
         <div className="absolute bottom-[-20%] right-[-10%] w-[55%] h-[55%] bg-indigo-500/10 dark:bg-indigo-600/15 rounded-full blur-[140px]" />
       </div>
 
-      <OfflineBanner />
-      <Toast toast={toast} onDismiss={dismissToast} />
-      <Navbar
-        currentView={currentView}
-        setView={handleSetView}
-        auth={auth}
-        onLogout={() => setShowLogoutConfirm(true)}
-        onOpenCommand={() =>
-          typeof window !== "undefined" &&
-          window.dispatchEvent(new CustomEvent("helpdesk:open-command"))
-        }
-        unreadCount={unreadCount}
-      />
-      <CommandPalette onNavigate={paletteNav} onTrackTicket={handleTrackTicket} />
+      {/* Hide navbar and other UI when preloader is showing on admin page */}
+      {!(currentView === "/admin" && showPreloader) && (
+        <>
+          <OfflineBanner />
+          <Toast toast={toast} onDismiss={dismissToast} />
+          <Navbar
+            currentView={currentView}
+            setView={handleSetView}
+            auth={auth}
+            onLogout={() => setShowLogoutConfirm(true)}
+            onOpenCommand={() =>
+              typeof window !== "undefined" &&
+              window.dispatchEvent(new CustomEvent("helpdesk:open-command"))
+            }
+            unreadCount={unreadCount}
+          />
+          <CommandPalette onNavigate={paletteNav} onTrackTicket={handleTrackTicket} />
+        </>
+      )}
 
       <main className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 md:pt-32 pb-32 md:pb-16 min-h-screen flex flex-col">
         {currentView === "/" && (
@@ -133,7 +147,31 @@ export default function Page() {
         )}
         {currentView === "/survei" && <SurveyView showToast={showToast} user={auth} />}
         {currentView === "/admin" && (
-          isAdmin ? (
+          !mounted || showPreloader ? (
+            <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-white dark:bg-slate-950">
+              <div className="flex flex-col items-center gap-8">
+                {/* Animated rings */}
+                <div className="relative w-28 h-28">
+                  <div className="absolute inset-0 border-4 border-blue-200 dark:border-blue-900 rounded-full animate-ping" />
+                  <div className="absolute inset-2 border-4 border-blue-300 dark:border-blue-800 rounded-full animate-ping" style={{ animationDelay: "200ms" }} />
+                  <div className="absolute inset-4 border-4 border-blue-400 dark:border-blue-700 rounded-full animate-ping" style={{ animationDelay: "400ms" }} />
+                  {/* Logo center */}
+                  <div className="absolute inset-6 rounded-full flex items-center justify-center">
+                    <img src="/logo.png" alt="Logo" className="w-full h-full rounded-full object-cover" />
+                  </div>
+                </div>
+                {/* Loading text with animated dots */}
+                <div className="flex flex-col items-center gap-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                    <div className="w-2.5 h-2.5 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                    <div className="w-2.5 h-2.5 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                  </div>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 animate-pulse">Memuat sesi...</p>
+                </div>
+              </div>
+            </div>
+          ) : isAdmin ? (
             <AdminDashboard showToast={showToast} admin={toAdminSession(auth)} />
           ) : (
             <AdminLogin setView={handleSetView} showToast={showToast} onLogin={handleLogin} />

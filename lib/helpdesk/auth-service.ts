@@ -93,8 +93,12 @@ export function subscribeAuth(cb: (s: AuthSession | null) => void): () => void {
     cb(null)
     return () => {}
   }
-  const initial = auth.currentUser ? toAuthSession(auth.currentUser) : null
-  cb(initial)
+  // Check localStorage first for instant response
+  const localSession = readLocal()
+  if (localSession) {
+    cb(localSession)
+  }
+  // Then listen to Firebase auth state
   return onAuthStateChanged(auth, (u) => {
     if (u) {
       const s = toAuthSession(u)
