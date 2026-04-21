@@ -1,0 +1,94 @@
+rules_version = '2';
+
+// Firestore Security Rules untuk Smart Helpdesk SDN 02 Cibadak.
+// Deploy lewat Firebase Console -> Firestore -> Rules, atau `firebase deploy --only firestore:rules`.
+//
+// Admin ditentukan via:
+// 1) Custom claim `role == "admin"` (diset via Cloud Functions / Admin SDK)
+// 2) Email whitelist yang dikelola via env var NEXT_PUBLIC_ADMIN_EMAILS
+//    dan Firestore settings > adminEmails (dicek di sisi client).
+//    Di rules ini, gunakan custom claim ATAU whitelist email di bawah.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null && (
+        request.auth.token.role == 'admin' ||
+        // Whitelist admin — kelola via env var NEXT_PUBLIC_ADMIN_EMAILS
+        // Tambahkan email admin di sini sebagai fallback rules-level
+        request.auth.token.email in [
+          'rahadiansyah1899@gmail.com',
+          'admin@sdn02cibadak.sch.id'
+        ]
+      );
+    }
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Tiket: user login boleh buat tiket, baca tiket milik sendiri.
+    // Admin boleh baca/update/delete semua tiket.
+    // Allow tracking by ticket code -- kode tiket = tracking number (security by obscurity).
+    match /tickets/{ticketId} {
+      allow create: if isAuthenticated()
+                    && request.resource.data.keys().hasAll(['name','role','service','details','status','createdAt'])
+                    && request.resource.data.status == 'Open'
+                    && request.resource.data.reporterUid == request.auth.uid;
+      // Read: admin bisa semua, authenticated user bisa baca (untuk tracking by code)
+      allow read: if isAdmin() || isAuthenticated();
+      // List: admin bisa semua, authenticated user bisa list (untuk query by code)
+      allow list: if isAdmin() || isAuthenticated();
+      // Update: admin bisa semua, authenticated user untuk typing indicator dan rating
+      allow update: if isAdmin()
+                    || (isAuthenticated()
+                        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['typingAdmin', 'typingReporter']))
+                    || (isAuthenticated()
+                        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['rating', 'ratingComment', 'ratedAt'])
+                        && resource.data.reporterUid == request.auth.uid);
+      allow delete: if isAdmin();
+    }
+
+    // Balasan tiket: user login boleh buat balasan pada tiketnya sendiri.
+    // Admin boleh baca/tulis semua balasan.
+    // User login boleh update readAt untuk read receipt.
+    match /ticket_replies/{replyId} {
+      allow create: if isAuthenticated();
+      allow read: if isAuthenticated();
+      allow update: if isAuthenticated()
+                     && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readAt']);
+      allow delete: if isAdmin();
+    }
+
+    // Survei/Feedback: user login boleh submit. Admin bisa baca semua.
+    match /feedbacks/{feedbackId} {
+      allow create: if isAuthenticated()
+                    && request.resource.data.keys().hasAll(['service','rating','feedback','createdAt'])
+                    && request.resource.data.rating is number
+                    && request.resource.data.rating >= 1
+                    && request.resource.data.rating <= 5
+                    && (request.resource.data.reporterUid == null || request.resource.data.reporterUid == request.auth.uid);
+      allow read: if isAdmin() || (isAuthenticated() && resource.data.reporterUid == request.auth.uid);
+      allow update, delete: if isAdmin();
+    }
+
+    // Audit logs: hanya admin boleh baca. Authenticated users boleh tulis (via system).
+    match /audit_logs/{logId} {
+      allow create: if isAuthenticated();
+      allow read: if isAdmin();
+      allow update, delete: if false;
+    }
+
+    // Settings: semua boleh baca (untuk tampilan publik), hanya admin boleh tulis.
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
