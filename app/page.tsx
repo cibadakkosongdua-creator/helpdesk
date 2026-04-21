@@ -11,7 +11,6 @@ import { HealthToast } from "@/components/helpdesk/health-toast"
 import { HomeView } from "@/components/helpdesk/home-view"
 import { Navbar } from "@/components/helpdesk/navbar"
 import OfflineBanner from "@/components/helpdesk/offline-banner"
-import { Preloader } from "@/components/helpdesk/preloader"
 import { PrayerLock } from "@/components/helpdesk/prayer-lock"
 import { SurveyView } from "@/components/helpdesk/survey-view"
 import { TicketView } from "@/components/helpdesk/ticket-view"
@@ -27,18 +26,11 @@ export default function Page() {
   const currentView: View = pathname === "/lapor" ? "/lapor" : pathname === "/survei" ? "/survei" : pathname === "/admin" ? "/admin" : "/"
   const [toast, setToast] = useState<ToastState>({ show: false, message: "", type: "success" })
   const [auth, setAuth] = useState<AuthSession | null>(null)
-  const [showPreloader, setShowPreloader] = useState(true)
   const [unreadCount, setUnreadCount] = useState(0)
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
   const [socialLinks, setSocialLinks] = useState<SocialLink[]>([])
   const [wellness, setWellness] = useState<WellnessConfig>(DEFAULT_SETTINGS.wellness ?? { prayerLockEnabled: true, healthToastEnabled: true })
   const isAdmin = auth?.role === "admin"
-
-  // Preloader timer - show on initial load
-  useEffect(() => {
-    const timer = setTimeout(() => setShowPreloader(false), 1000)
-    return () => clearTimeout(timer)
-  }, [])
 
   useEffect(() => {
     const unsub = subscribeAuth((s) => setAuth(s))
@@ -117,28 +109,20 @@ export default function Page() {
         <div className="absolute bottom-[-20%] right-[-10%] w-[55%] h-[55%] bg-indigo-500/10 dark:bg-indigo-600/15 rounded-full blur-[140px]" />
       </div>
 
-      {/* Preloader on initial load */}
-      <Preloader show={showPreloader} />
-
-      {/* Hide navbar and other UI when preloader is showing */}
-      {!showPreloader && (
-        <>
-          <OfflineBanner />
-          <Toast toast={toast} onDismiss={dismissToast} />
-          <Navbar
-            currentView={currentView}
-            setView={handleSetView}
-            auth={auth}
-            onLogout={() => setShowLogoutConfirm(true)}
-            onOpenCommand={() =>
-              typeof window !== "undefined" &&
-              window.dispatchEvent(new CustomEvent("helpdesk:open-command"))
-            }
-            unreadCount={unreadCount}
-          />
-          <CommandPalette onNavigate={paletteNav} onTrackTicket={handleTrackTicket} />
-        </>
-      )}
+      <OfflineBanner />
+      <Toast toast={toast} onDismiss={dismissToast} />
+      <Navbar
+        currentView={currentView}
+        setView={handleSetView}
+        auth={auth}
+        onLogout={() => setShowLogoutConfirm(true)}
+        onOpenCommand={() =>
+          typeof window !== "undefined" &&
+          window.dispatchEvent(new CustomEvent("helpdesk:open-command"))
+        }
+        unreadCount={unreadCount}
+      />
+      <CommandPalette onNavigate={paletteNav} onTrackTicket={handleTrackTicket} />
 
       <main className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 md:pt-32 pb-32 md:pb-16 min-h-screen flex flex-col">
         {currentView === "/" && (

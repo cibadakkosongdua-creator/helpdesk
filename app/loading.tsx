@@ -1,20 +1,4 @@
-"use client"
-
-import { useEffect, useState } from "react"
-
-export function Preloader({ show }: { show: boolean }) {
-  const [visible, setVisible] = useState(false)
-
-  useEffect(() => {
-    if (show) {
-      setVisible(true)
-      const timer = setTimeout(() => setVisible(false), 1000)
-      return () => clearTimeout(timer)
-    }
-  }, [show])
-
-  if (!visible) return null
-
+export default function Loading() {
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-white dark:bg-slate-950">
       <div className="flex flex-col items-center gap-8">
@@ -35,7 +19,7 @@ export function Preloader({ show }: { show: boolean }) {
             <div className="w-2.5 h-2.5 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
             <div className="w-2.5 h-2.5 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
           </div>
-          <p className="text-sm text-slate-500 dark:text-slate-400 animate-pulse">Memuat sesi...</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400 animate-pulse">Memuat...</p>
         </div>
       </div>
     </div>
