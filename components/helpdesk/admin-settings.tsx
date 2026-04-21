@@ -5,7 +5,7 @@ import {
   Bell,
   Calendar,
   ChevronDown,
-  FileText,
+  Globe,
   Mail,
   MessageSquare,
   Minus,
@@ -25,7 +25,7 @@ import {
   saveFaq,
   saveAdminEmails,
   saveServices,
-  saveLetterTypes,
+  saveSocialLinks,
   saveAnnouncement,
   saveMaintenanceSchedules,
   saveReplyTemplates,
@@ -34,7 +34,7 @@ import {
   type FaqItem,
   type ServiceConfig,
   type ServiceStatus,
-  type LetterType,
+  type SocialLink,
   type AnnouncementConfig,
   type MaintenanceSchedule,
   type ReplyTemplate,
@@ -43,7 +43,7 @@ import {
 import type { ShowToastFn } from "./types"
 import { ConfirmDialog } from "./confirm-dialog"
 
-type Section = "contacts" | "portal" | "faq" | "admin-emails" | "services" | "letters" | "announcement" | "maintenance" | "templates"
+type Section = "contacts" | "portal" | "faq" | "admin-emails" | "services" | "socials" | "announcement" | "maintenance" | "templates"
 
 const SECTIONS: { id: Section; label: string; icon: LucideIcon }[] = [
   { id: "contacts", label: "Kontak Darurat", icon: AlertTriangle },
@@ -54,7 +54,7 @@ const SECTIONS: { id: Section; label: string; icon: LucideIcon }[] = [
   { id: "templates", label: "Template Balasan", icon: MessageSquare },
   { id: "admin-emails", label: "Admin Email", icon: Shield },
   { id: "services", label: "Daftar Layanan", icon: Settings },
-  { id: "letters", label: "Jenis Surat", icon: FileText },
+  { id: "socials", label: "Sosial Media", icon: Globe },
 ]
 
 export function AdminSettings({ showToast }: { showToast: ShowToastFn }) {
@@ -78,7 +78,7 @@ export function AdminSettings({ showToast }: { showToast: ShowToastFn }) {
         case "faq": await saveFaq(settings.faq); break
         case "admin-emails": await saveAdminEmails(settings.adminEmails); break
         case "services": await saveServices(settings.services); break
-        case "letters": await saveLetterTypes(settings.letterTypes); break
+        case "socials": await saveSocialLinks(settings.socialLinks); break
         case "templates": await saveReplyTemplates(settings.replyTemplates ?? []); break
       }
       showToast("Pengaturan berhasil disimpan.", "success")
@@ -147,8 +147,8 @@ export function AdminSettings({ showToast }: { showToast: ShowToastFn }) {
         {activeSection === "services" && (
           <ServicesSection services={settings.services} onChange={(s) => update({ services: s })} onSave={() => handleSave("services")} saving={saving} />
         )}
-        {activeSection === "letters" && (
-          <LettersSection letters={settings.letterTypes} onChange={(l) => update({ letterTypes: l })} onSave={() => handleSave("letters")} saving={saving} />
+        {activeSection === "socials" && (
+          <SocialLinksSection links={settings.socialLinks} onChange={(l) => update({ socialLinks: l })} onSave={() => handleSave("socials")} saving={saving} />
         )}
         {activeSection === "templates" && (
           <TemplatesSection templates={settings.replyTemplates ?? []} onChange={(t) => update({ replyTemplates: t })} onSave={() => handleSave("templates")} saving={saving} />
@@ -481,48 +481,51 @@ function ServicesSection({
   )
 }
 
-/* ---------- Letter Types Section ---------- */
+/* ---------- Social Links Section ---------- */
 
-function LettersSection({
-  letters,
+function SocialLinksSection({
+  links,
   onChange,
   onSave,
   saving,
 }: {
-  letters: LetterType[]
-  onChange: (l: LetterType[]) => void
+  links: SocialLink[]
+  onChange: (l: SocialLink[]) => void
   onSave: () => void
   saving: boolean
 }) {
-  const add = () => onChange([...letters, { id: "", name: "", tone: "" }])
-  const remove = (i: number) => onChange(letters.filter((_, idx) => idx !== i))
-  const updateItem = (i: number, field: keyof LetterType, value: string) => {
-    const next = [...letters]
+  const add = () => onChange([...links, { id: "", platform: "", url: "", icon: "" }])
+  const remove = (i: number) => onChange(links.filter((_, idx) => idx !== i))
+  const updateItem = (i: number, field: keyof SocialLink, value: string) => {
+    const next = [...links]
     next[i] = { ...next[i], [field]: value }
     onChange(next)
   }
 
   return (
     <div>
-      <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">Jenis Surat</h3>
-      <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">Daftar jenis surat yang tersedia di fitur pembuatan surat.</p>
+      <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">Sosial Media</h3>
+      <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">Daftar sosial media yang tampil di footer website.</p>
 
       <div className="space-y-3">
-        {letters.map((l, i) => (
+        {links.map((l, i) => (
           <div key={i} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200/60 dark:border-white/5">
-            <input placeholder="ID (contoh: izin)" value={l.id} onChange={(e) => updateItem(i, "id", e.target.value)} className="input-field" />
-            <input placeholder="Nama (contoh: Surat Izin)" value={l.name} onChange={(e) => updateItem(i, "name", e.target.value)} className="input-field" />
-            <input placeholder="Tone (contoh: permohonan izin)" value={l.tone} onChange={(e) => updateItem(i, "tone", e.target.value)} className="input-field" />
-            <ConfirmDialog
-              title="Hapus Jenis Surat?"
-              description={`Jenis surat "${l.name || 'ini'}" akan dihapus dari daftar. Tindakan ini tidak dapat dibatalkan.`}
-              onConfirm={() => remove(i)}
-            />
+            <input placeholder="ID (contoh: instagram)" value={l.id} onChange={(e) => updateItem(i, "id", e.target.value)} className="input-field" />
+            <input placeholder="Platform (contoh: Instagram)" value={l.platform} onChange={(e) => updateItem(i, "platform", e.target.value)} className="input-field" />
+            <input placeholder="URL (contoh: https://instagram.com/...)" value={l.url} onChange={(e) => updateItem(i, "url", e.target.value)} className="input-field" />
+            <div className="flex items-center gap-2">
+              <input placeholder="Icon (opsional)" value={l.icon || ""} onChange={(e) => updateItem(i, "icon", e.target.value)} className="input-field flex-1" />
+              <ConfirmDialog
+                title="Hapus Sosial Media?"
+                description={`Sosial media "${l.platform || 'ini'}" akan dihapus dari daftar. Tindakan ini tidak dapat dibatalkan.`}
+                onConfirm={() => remove(i)}
+              />
+            </div>
           </div>
         ))}
       </div>
 
-      <ActionBar onAdd={add} addLabel="Tambah Jenis Surat" onSave={onSave} saving={saving} />
+      <ActionBar onAdd={add} addLabel="Tambah Sosial Media" onSave={onSave} saving={saving} />
     </div>
   )
 }

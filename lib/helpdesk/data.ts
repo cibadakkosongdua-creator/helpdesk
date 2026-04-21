@@ -118,12 +118,10 @@ export const FAQ_DATA = [
   },
 ]
 
-export const LETTER_TYPES = [
-  { id: "izin", name: "Surat Izin Tidak Masuk", tone: "permohonan izin" },
-  { id: "sakit", name: "Surat Keterangan Sakit", tone: "pemberitahuan sakit" },
-  { id: "dispensasi", name: "Permohonan Dispensasi", tone: "permohonan dispensasi kegiatan" },
-  { id: "terima-kasih", name: "Surat Terima Kasih", tone: "ucapan terima kasih formal" },
-  { id: "usulan", name: "Usulan / Masukan", tone: "usulan konstruktif" },
+export const SOCIAL_LINKS = [
+  { id: "instagram", platform: "Instagram", url: "https://instagram.com/sdn02cibadak", icon: "Instagram" },
+  { id: "youtube", platform: "YouTube", url: "https://youtube.com/@sdn02cibadak", icon: "Youtube" },
+  { id: "facebook", platform: "Facebook", url: "https://facebook.com/sdn02cibadak", icon: "Facebook" },
 ]
 
 /* ---------- Fallback data for Settings service ---------- */
@@ -136,4 +134,4 @@ export const FAQ_FALLBACK = [...FAQ_DATA]
 
 export const SERVICES_FALLBACK = SERVICES.map(({ id, name, url, description }) => ({ id, name, url, description }))
 
-export const LETTER_TYPES_FALLBACK = [...LETTER_TYPES]
+export const SOCIAL_LINKS_FALLBACK = [...SOCIAL_LINKS]

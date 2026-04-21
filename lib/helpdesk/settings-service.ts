@@ -2,7 +2,7 @@
 
 import { doc, getDoc, onSnapshot, setDoc } from "firebase/firestore"
 import { getFirebase } from "./firebase"
-import { CONTACTS_FALLBACK, FAQ_FALLBACK, LETTER_TYPES_FALLBACK, SERVICES_FALLBACK } from "./data"
+import { CONTACTS_FALLBACK, FAQ_FALLBACK, SOCIAL_LINKS_FALLBACK, SERVICES_FALLBACK } from "./data"
 
 /* ---------- Types ---------- */
 
@@ -27,10 +27,11 @@ export type ServiceConfig = {
   description: string
 }
 
-export type LetterType = {
+export type SocialLink = {
   id: string
-  name: string
-  tone: string
+  platform: string // e.g. 'Instagram', 'YouTube', 'Facebook'
+  url: string
+  icon?: string // lucide icon name
 }
 
 export type PublicStats = {
@@ -68,7 +69,7 @@ export type AppSettings = {
   faq: FaqItem[]
   adminEmails: string[]
   services: ServiceConfig[]
-  letterTypes: LetterType[]
+  socialLinks: SocialLink[]
   publicStats?: PublicStats
   announcement?: AnnouncementConfig
   maintenanceSchedules?: MaintenanceSchedule[]
@@ -83,7 +84,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   faq: FAQ_FALLBACK,
   adminEmails: [],
   services: SERVICES_FALLBACK.map(({ id, name, url, description }) => ({ id, name, url, description })),
-  letterTypes: LETTER_TYPES_FALLBACK,
+  socialLinks: SOCIAL_LINKS_FALLBACK,
 }
 
 /* ---------- Firestore ---------- */
@@ -112,7 +113,7 @@ export function subscribeSettings(onUpdate: (s: AppSettings) => void): () => voi
         faq: raw.faq ?? DEFAULT_SETTINGS.faq,
         adminEmails: raw.adminEmails ?? DEFAULT_SETTINGS.adminEmails,
         services: raw.services ?? DEFAULT_SETTINGS.services,
-        letterTypes: raw.letterTypes ?? DEFAULT_SETTINGS.letterTypes,
+        socialLinks: raw.socialLinks ?? DEFAULT_SETTINGS.socialLinks,
         publicStats: raw.publicStats ?? undefined,
         announcement: raw.announcement ?? undefined,
         maintenanceSchedules: raw.maintenanceSchedules ?? [],
@@ -141,7 +142,7 @@ export async function getSettings(): Promise<AppSettings> {
         faq: raw.faq ?? DEFAULT_SETTINGS.faq,
         adminEmails: raw.adminEmails ?? DEFAULT_SETTINGS.adminEmails,
         services: raw.services ?? DEFAULT_SETTINGS.services,
-        letterTypes: raw.letterTypes ?? DEFAULT_SETTINGS.letterTypes,
+        socialLinks: raw.socialLinks ?? DEFAULT_SETTINGS.socialLinks,
         announcement: raw.announcement ?? undefined,
         maintenanceSchedules: raw.maintenanceSchedules ?? [],
         replyTemplates: raw.replyTemplates ?? [],
@@ -198,8 +199,8 @@ export const saveServices = async (services: ServiceConfig[]) => {
   await saveSettings({ services })
 }
 
-export const saveLetterTypes = (letterTypes: LetterType[]) =>
-  saveSettings({ letterTypes })
+export const saveSocialLinks = (socialLinks: SocialLink[]) =>
+  saveSettings({ socialLinks })
 
 export const saveAnnouncement = (announcement: AnnouncementConfig) =>
   saveSettings({ announcement })
