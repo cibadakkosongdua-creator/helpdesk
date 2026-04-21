@@ -21,41 +21,31 @@ export const HEALTH_REMINDERS: HealthReminder[] = [
     id: "eye",
     type: "eye",
     title: "Istirahatkan Mata",
-    message: "Lihat objek 6 meter jauhnya selama 20 detik. Atur aturan 20-20-20: setiap 20 menit, lihat 20 kaki jauhnya, selama 20 detik.",
+    message: "Lihat objek jauh selama 20 detik. Aturan 20-20-20: setiap 20 menit, lihat 20 kaki jauhnya, selama 20 detik.",
     icon: Eye,
     color: "text-blue-600 dark:text-blue-400",
     bgColor: "bg-blue-100 dark:bg-blue-500/20",
-    interval: 20,
+    interval: 20, // Muncul setiap 20 menit
   },
   {
     id: "stand",
     type: "stand",
     title: "Waktunya Berdiri",
-    message: "Berdiri dan renggangkan badan Anda. Duduk terlalu lama dapat menyebabkan ketegangan otot dan masalah kesehatan.",
+    message: "Berdiri dan renggangkan badan. Hindari duduk terlalu lama untuk kesehatan.",
     icon: Footprints,
     color: "text-emerald-600 dark:text-emerald-400",
     bgColor: "bg-emerald-100 dark:bg-emerald-500/20",
-    interval: 45,
+    interval: 30, // Muncul setiap 30 menit
   },
   {
     id: "water",
     type: "water",
     title: "Waktunya Minum Air",
-    message: "Tubuh Anda membutuhkan hidrasi. Minum segelas air putih untuk menjaga kesehatan dan konsentrasi.",
+    message: "Minum segelas air putih untuk menjaga hidrasi dan konsentrasi.",
     icon: Droplets,
     color: "text-cyan-600 dark:text-cyan-400",
     bgColor: "bg-cyan-100 dark:bg-cyan-500/20",
-    interval: 60,
-  },
-  {
-    id: "posture",
-    type: "posture",
-    title: "Periksa Posisi Duduk",
-    message: "Pastikan punggung tegak, bahu rileks, dan layar sejajar dengan mata. Posisi yang baik mencegah nyeri punggung.",
-    icon: Eye,
-    color: "text-purple-600 dark:text-purple-400",
-    bgColor: "bg-purple-100 dark:bg-purple-500/20",
-    interval: 30,
+    interval: 45, // Muncul setiap 45 menit
   },
 ]
 
@@ -103,7 +93,7 @@ export function HealthToast({ enabled }: HealthToastProps) {
     setIsVisible(false)
 
     if (snooze && currentReminder) {
-      // Snooze for 5 minutes
+      // Snooze: remind again in 5 minutes
       setStates(prev => {
         const next = {
           ...prev,
@@ -115,20 +105,8 @@ export function HealthToast({ enabled }: HealthToastProps) {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
         return next
       })
-    } else {
-      // Mark as dismissed
-      setStates(prev => {
-        const next = {
-          ...prev,
-          [currentReminder?.id || ""]: {
-            lastShown: Date.now(),
-            dismissed: true,
-          },
-        }
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
-        return next
-      })
     }
+    // Normal dismiss: reset timer
 
     setTimeout(() => setCurrentReminder(null), 300)
   }
@@ -204,6 +182,9 @@ export function HealthToast({ enabled }: HealthToastProps) {
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
               {currentReminder.message}
             </p>
+            <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1">
+              Pengingat ini muncul setiap {currentReminder.interval} menit
+            </p>
           </div>
         </div>
 
@@ -212,13 +193,13 @@ export function HealthToast({ enabled }: HealthToastProps) {
             onClick={() => dismissReminder(true)}
             className="flex-1 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-white/10 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
           >
-            Ingatkan 5 Menit Lagi
+            Ingatkan Lagi
           </button>
           <button
             onClick={() => dismissReminder(false)}
             className={`flex-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-white transition-colors ${currentReminder.bgColor.replace("100", "500").replace("/20", "")}`}
           >
-            OK, Terima Kasih
+            OK
           </button>
         </div>
       </div>
