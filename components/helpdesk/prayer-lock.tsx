@@ -2,7 +2,7 @@
 
 import { Clock, Lock, Moon, Sun, Sunset, X } from "lucide-react"
 import { useEffect, useState } from "react"
-import { getPrayerState, getTodayPrayerTimes, getTodayPrayerTimesAsync, getCurrentSchedule, type PrayerName, type PrayerState, formatTimeRemaining, shouldShowReminder } from "@/lib/helpdesk/prayer-times"
+import { getPrayerState, getTodayPrayerTimes, getTodayPrayerTimesAsync, getCurrentSchedule, type PrayerName, type PrayerState, formatTimeRemaining, shouldShowReminder, dismissReminder } from "@/lib/helpdesk/prayer-times"
 
 const PRAYER_ICONS: Record<PrayerName, typeof Sun> = {
   Subuh: Moon,
@@ -26,7 +26,7 @@ type PrayerLockProps = {
 }
 
 export function PrayerLock({ enabled }: PrayerLockProps) {
-  const [state, setState] = useState<PrayerState>({ current: null, next: null, isLocked: false, remainingMinutes: 0 })
+  const [state, setState] = useState<PrayerState>(() => getPrayerState())
   const [showReminder, setShowReminder] = useState(false)
   const [reminderPrayer, setReminderPrayer] = useState<PrayerName | null>(null)
   const [reminderMinutes, setReminderMinutes] = useState(0)
@@ -50,14 +50,23 @@ export function PrayerLock({ enabled }: PrayerLockProps) {
         setShowReminder(true)
         setReminderPrayer(reminder.prayer)
         setReminderMinutes(reminder.minutesUntil)
+      } else {
+        setShowReminder(false)
       }
     }
 
     check()
-    // Check every 1 second when locked, 30 seconds when not locked
-    const interval = setInterval(check, state.isLocked ? 1000 : 30000)
+    // Check every 1 second when locked, 15 seconds when not locked
+    const interval = setInterval(check, state.isLocked ? 1000 : 15000)
     return () => clearInterval(interval)
   }, [enabled, state.isLocked])
+
+  const handleDismiss = () => {
+    if (reminderPrayer) {
+      dismissReminder(reminderPrayer)
+    }
+    setShowReminder(false)
+  }
 
   // Countdown timer
   useEffect(() => {
@@ -111,7 +120,7 @@ export function PrayerLock({ enabled }: PrayerLockProps) {
               </div>
             </div>
             <button
-              onClick={() => setShowReminder(false)}
+              onClick={handleDismiss}
               className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400"
             >
               <X className="w-5 h-5" />
@@ -124,13 +133,13 @@ export function PrayerLock({ enabled }: PrayerLockProps) {
 
           <div className="flex gap-2">
             <button
-              onClick={() => setShowReminder(false)}
+              onClick={handleDismiss}
               className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
             >
               Tutup
             </button>
             <button
-              onClick={() => setShowReminder(false)}
+              onClick={handleDismiss}
               className="flex-1 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold transition-colors"
             >
               Siap Sholat
@@ -218,7 +227,7 @@ export function PrayerLock({ enabled }: PrayerLockProps) {
  * Prayer status badge for navbar
  */
 export function PrayerBadge() {
-  const [state, setState] = useState<PrayerState>({ current: null, next: null, isLocked: false, remainingMinutes: 0 })
+  const [state, setState] = useState<PrayerState>(() => getPrayerState())
 
   useEffect(() => {
     const check = () => setState(getPrayerState())

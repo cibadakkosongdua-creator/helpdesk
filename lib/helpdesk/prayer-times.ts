@@ -49,6 +49,18 @@ const FALLBACK_SCHEDULE: Record<PrayerName, PrayerSchedule> = {
 // Store current schedule (from API or fallback)
 let currentSchedule: Record<PrayerName, PrayerSchedule> = { ...FALLBACK_SCHEDULE }
 
+// Load from localStorage if available (immediately on module load)
+if (typeof window !== "undefined") {
+  const savedSchedule = localStorage.getItem("prayer_schedule")
+  if (savedSchedule) {
+    try {
+      currentSchedule = JSON.parse(savedSchedule)
+    } catch (e) {
+      console.error("Failed to parse saved prayer schedule")
+    }
+  }
+}
+
 /**
  * Fetch prayer times from Aladhan API
  */
@@ -78,13 +90,20 @@ async function fetchPrayerTimesFromAPI(): Promise<Record<PrayerName, PrayerSched
       return { hour, minute }
     }
 
-    return {
+    const schedule: Record<PrayerName, PrayerSchedule> = {
       Subuh: { ...parseTime(timings.Fajr), lockDuration: LOCK_DURATION_MINUTES },
       Dhuhur: { ...parseTime(timings.Dhuhr), lockDuration: LOCK_DURATION_MINUTES },
       Ashar: { ...parseTime(timings.Asr), lockDuration: LOCK_DURATION_MINUTES },
       Maghrib: { ...parseTime(timings.Maghrib), lockDuration: LOCK_DURATION_MINUTES },
       Isya: { ...parseTime(timings.Isha), lockDuration: LOCK_DURATION_MINUTES },
     }
+
+    // Save to localStorage for faster access on next load
+    if (typeof window !== "undefined") {
+      localStorage.setItem("prayer_schedule", JSON.stringify(schedule))
+    }
+
+    return schedule
   } catch (error) {
     console.error("Failed to fetch prayer times:", error)
     return null
@@ -198,12 +217,21 @@ export function shouldShowReminder(): { show: boolean; prayer: PrayerName | null
   const now = new Date()
   const currentMs = now.getHours() * 60 * 60 * 1000 + now.getMinutes() * 60 * 1000
   const prayerTimes = getTodayPrayerTimes()
+  const today = new Date().toDateString()
 
   for (const prayer of prayerTimes) {
     const reminderTime = prayer.timestamp - 5 * 60 * 1000 // 5 minutes before
-    const endTime = prayer.timestamp + 2 * 60 * 1000 // 2 minutes window for reminder
+    const endTime = prayer.timestamp // Until prayer starts
 
     if (currentMs >= reminderTime && currentMs < endTime) {
+      // Check if already dismissed for this prayer today
+      if (typeof window !== "undefined") {
+        const dismissedKey = `prayer_dismissed_${today}_${prayer.name}`
+        if (localStorage.getItem(dismissedKey)) {
+          continue
+        }
+      }
+
       const minutesUntil = Math.ceil((prayer.timestamp - currentMs) / 60000)
       return {
         show: true,
@@ -214,6 +242,15 @@ export function shouldShowReminder(): { show: boolean; prayer: PrayerName | null
   }
 
   return { show: false, prayer: null, minutesUntil: 0 }
+}
+
+/**
+ * Mark a prayer reminder as dismissed for today
+ */
+export function dismissReminder(prayer: PrayerName) {
+  if (typeof window === "undefined") return
+  const today = new Date().toDateString()
+  localStorage.setItem(`prayer_dismissed_${today}_${prayer}`, "true")
 }
 
 /**
