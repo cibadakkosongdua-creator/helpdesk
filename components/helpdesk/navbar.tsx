@@ -40,7 +40,18 @@ export function Navbar({
   const dropdownRef = useRef<HTMLDivElement>(null)
   const [mobileDropdownOpen, setMobileDropdownOpen] = useState(false)
   const mobileDropdownRef = useRef<HTMLDivElement>(null)
+  const [scrolled, setScrolled] = useState(false)
+
   useEffect(() => setMounted(true), [])
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20)
+    }
+    window.addEventListener("scroll", handleScroll)
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [])
+
   const isDark = mounted ? theme === "dark" : true
   const isAdmin = auth?.role === "admin"
   const isMac = mounted && typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.userAgent)
@@ -82,23 +93,27 @@ export function Navbar({
   return (
     <>
       {/* Desktop floating pill navbar */}
-      <nav className="hidden md:flex fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-slate-200/60 dark:border-white/10 px-2 py-2 rounded-full items-center gap-1 shadow-lg dark:shadow-2xl dark:shadow-blue-900/10 transition-all">
+      <nav className={`hidden md:flex fixed top-6 left-1/2 -translate-x-1/2 z-50 px-2 py-2 rounded-full items-center gap-1 transition-all duration-500 ${
+        scrolled 
+          ? "bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-slate-200/60 dark:border-white/10 shadow-lg dark:shadow-2xl dark:shadow-blue-900/10" 
+          : "bg-transparent border-transparent shadow-none"
+      }`}>
         {/* Logo */}
         <button
           onClick={() => setView("/")}
           className="flex items-center gap-3 px-4 mr-2 cursor-pointer group"
         >
-          <img src="/logo.png" alt="Logo" className="w-9 h-9 rounded-full object-cover shadow-inner group-hover:scale-105 transition-transform" />
-          <span className="font-bold tracking-tight text-slate-900 dark:text-white">Helpdesk</span>
+          <img src="/logo.png" alt="Logo" className={`w-9 h-9 rounded-full object-cover transition-all duration-500 ${scrolled ? "shadow-inner" : "shadow-none"}`} />
+          <span className={`font-bold tracking-tight transition-colors duration-500 ${scrolled ? "text-slate-900 dark:text-white" : "text-slate-900 dark:text-white"}`}>Helpdesk</span>
         </button>
 
         {/* Divider */}
-        <div className="w-px h-6 bg-slate-200 dark:bg-slate-800 mx-0.5" />
+        <div className={`w-px h-6 mx-0.5 transition-all duration-500 ${scrolled ? "bg-slate-200 dark:bg-slate-800" : "bg-transparent"}`} />
 
         {/* Nav links */}
-        <DesktopNavButton view="/" current={currentView} set={setView} icon={Home} label="Dashboard" />
-        <DesktopNavButton view="/lapor" current={currentView} set={setView} icon={Ticket} label="Lapor" />
-        <DesktopNavButton view="/survei" current={currentView} set={setView} icon={ClipboardCheck} label="Survei" />
+        <DesktopNavButton view="/" current={currentView} set={setView} icon={Home} label="Dashboard" scrolled={scrolled} />
+        <DesktopNavButton view="/lapor" current={currentView} set={setView} icon={Ticket} label="Lapor" scrolled={scrolled} />
+        <DesktopNavButton view="/survei" current={currentView} set={setView} icon={ClipboardCheck} label="Survei" scrolled={scrolled} />
         {isAdmin && (
           <div className="relative">
             <DesktopNavButton
@@ -107,6 +122,7 @@ export function Navbar({
               set={setView}
               icon={LayoutDashboard}
               label="Admin"
+              scrolled={scrolled}
             />
             {unreadCount > 0 && (
               <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center px-1 text-[10px] font-bold bg-red-500 text-white rounded-full shadow-lg shadow-red-500/40 animate-in zoom-in duration-300">
@@ -117,25 +133,37 @@ export function Navbar({
         )}
 
         {/* Divider */}
-        <div className="w-px h-6 bg-slate-200 dark:bg-slate-800 mx-0.5" />
+        <div className={`w-px h-6 mx-0.5 transition-all duration-500 ${scrolled ? "bg-slate-200 dark:bg-slate-800" : "bg-transparent"}`} />
 
         {/* Actions */}
         {onOpenCommand && (
           <button
             onClick={onOpenCommand}
-            className="hidden lg:inline-flex items-center gap-2 px-3 py-2 rounded-full hover:bg-slate-100/60 dark:hover:bg-white/5 text-slate-500 dark:text-slate-400 transition-colors"
+            className={`hidden lg:inline-flex items-center gap-2 px-3 py-2 rounded-full transition-all duration-500 ${
+              scrolled 
+                ? "hover:bg-slate-100/60 dark:hover:bg-white/5 text-slate-500 dark:text-slate-400" 
+                : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
+            }`}
             aria-label="Cari cepat"
             title="Cari cepat (Ctrl+K)"
           >
             <Search className="w-5 h-5" />
-            <kbd className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400">
+            <kbd className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-md border transition-all duration-500 ${
+              scrolled
+                ? "border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400"
+                : "border-slate-300 dark:border-white/20 bg-white/10 dark:bg-white/5 text-slate-600 dark:text-slate-300"
+            }`}>
               {isMac ? "⌘" : "Ctrl+"}K
             </kbd>
           </button>
         )}
         <button
           onClick={() => setTheme(isDark ? "light" : "dark")}
-          className="p-2 rounded-full hover:bg-slate-100/60 dark:hover:bg-white/5 text-slate-500 dark:text-slate-400 transition-colors"
+          className={`p-2 rounded-full transition-all duration-500 ${
+            scrolled 
+              ? "hover:bg-slate-100/60 dark:hover:bg-white/5 text-slate-500 dark:text-slate-400" 
+              : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
+          }`}
           aria-label="Ubah tema"
         >
           {mounted && isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
@@ -146,10 +174,12 @@ export function Navbar({
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setDropdownOpen(!dropdownOpen)}
-              className="flex items-center gap-2 px-2 py-1.5 rounded-full hover:bg-slate-100/60 dark:hover:bg-white/5 transition-colors"
+              className={`flex items-center gap-2 px-2 py-1.5 rounded-full transition-all duration-500 ${
+                scrolled ? "hover:bg-slate-100/60 dark:hover:bg-white/5" : "hover:bg-white/10 dark:hover:bg-white/5"
+              }`}
             >
               <NavbarAvatar auth={auth} size="md" />
-              <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`} />
+              <ChevronDown className={`w-5 h-5 transition-all duration-500 ${scrolled ? "text-slate-400" : "text-slate-500 dark:text-slate-400"} ${dropdownOpen ? "rotate-180" : ""}`} />
             </button>
 
             {dropdownOpen && (
@@ -314,12 +344,14 @@ function DesktopNavButton({
   set,
   icon: Icon,
   label,
+  scrolled,
 }: {
   view: View
   current: View
   set: (v: View) => void
   icon: LucideIcon
   label: string
+  scrolled: boolean
 }) {
   const active = current === view
   return (
@@ -327,11 +359,17 @@ function DesktopNavButton({
       onClick={() => set(view)}
       className={`relative flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all duration-300 overflow-hidden ${
         active
-          ? "text-slate-900 dark:text-white"
-          : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+          ? scrolled ? "text-slate-900 dark:text-white" : "text-slate-900 dark:text-white"
+          : scrolled 
+            ? "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200" 
+            : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
       }`}
     >
-      {active && <span className="absolute inset-0 bg-slate-100 dark:bg-white/10 rounded-full" />}
+      {active && (
+        <span className={`absolute inset-0 rounded-full transition-all duration-500 ${
+          scrolled ? "bg-slate-100 dark:bg-white/10" : "bg-white/10 dark:bg-white/5"
+        }`} />
+      )}
       <Icon className="w-5 h-5 relative z-10" />
       <span className="relative z-10">{label}</span>
     </button>
