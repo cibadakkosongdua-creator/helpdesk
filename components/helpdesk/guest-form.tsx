@@ -1,6 +1,6 @@
 "use client"
 
-import { Check, User, Phone, FileText, Loader2, Star, Sparkles, ClipboardCheck, Mail } from "lucide-react"
+import { Check, User, Phone, FileText, Loader2, Star, Sparkles, ClipboardCheck, Mail, Briefcase, Users, UserCheck, MailOpen, ClipboardList, Smartphone } from "lucide-react"
 import { useState } from "react"
 import { saveGuest } from "@/lib/helpdesk/guest-service"
 import { saveFeedback } from "@/lib/helpdesk/firestore-service"
@@ -21,6 +21,53 @@ export function GuestForm({ showToast, onSuccess }: { showToast: ShowToastFn; on
     phone: "",
   })
 
+  // Get color theme based on category
+  const getThemeColor = () => {
+    switch (formData.category) {
+      case 'Orang Tua': 
+        return { 
+          name: 'green',
+          bg: 'bg-green-600', 
+          ring: 'ring-green-500/30', 
+          border: 'border-green-500/50', 
+          text: 'text-green-600 dark:text-green-400', 
+          icon: 'text-green-500',
+          aura: 'via-green-500/20',
+          focusBorder: 'focus-within:border-green-500/50',
+          focusIcon: 'group-focus-within:text-green-500',
+          labelFocus: 'peer-focus:text-green-500'
+        };
+      case 'Dinas': 
+        return { 
+          name: 'purple',
+          bg: 'bg-purple-600', 
+          ring: 'ring-purple-500/30', 
+          border: 'border-purple-500/50', 
+          text: 'text-purple-600 dark:text-purple-400', 
+          icon: 'text-purple-500',
+          aura: 'via-purple-500/20',
+          focusBorder: 'focus-within:border-purple-500/50',
+          focusIcon: 'group-focus-within:text-purple-500',
+          labelFocus: 'peer-focus:text-purple-500'
+        };
+      default: 
+        return { 
+          name: 'blue',
+          bg: 'bg-blue-600', 
+          ring: 'ring-blue-500/30', 
+          border: 'border-blue-500/50', 
+          text: 'text-blue-600 dark:text-blue-400', 
+          icon: 'text-blue-500',
+          aura: 'via-blue-500/20',
+          focusBorder: 'focus-within:border-blue-500/50',
+          focusIcon: 'group-focus-within:text-blue-500',
+          labelFocus: 'peer-focus:text-blue-500'
+        };
+    }
+  }
+
+  const theme = getThemeColor();
+
   // Survey state
   const [rating, setRating] = useState(0)
   const [hoverRating, setHoverRating] = useState(0)
@@ -30,8 +77,8 @@ export function GuestForm({ showToast, onSuccess }: { showToast: ShowToastFn; on
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!formData.name.trim() || !formData.purpose.trim()) {
-      showToast("Nama dan keperluan wajib diisi", "error")
+    if (!formData.name.trim() || !formData.email.trim() || !formData.purpose.trim()) {
+      showToast("Nama, email, dan keperluan wajib diisi", "error")
       return
     }
 
@@ -237,102 +284,202 @@ export function GuestForm({ showToast, onSuccess }: { showToast: ShowToastFn; on
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} className="space-y-6">
         {/* Kategori */}
-        <div>
-          <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
-            Kategori *
-          </label>
-          <select
-            value={formData.category}
-            onChange={(e) => setFormData({ ...formData, category: e.target.value as "Dinas" | "Orang Tua" | "Umum" })}
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-            disabled={loading}
-            required
-          >
-            <option value="Umum" className="dark:bg-slate-800 dark:text-slate-100">Umum</option>
-            <option value="Orang Tua" className="dark:bg-slate-800 dark:text-slate-100">Orang Tua</option>
-            <option value="Dinas" className="dark:bg-slate-800 dark:text-slate-100">Dinas</option>
-          </select>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300">
+              Pilih Kategori <span className={theme.text}>*</span>
+            </label>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { id: 'Umum', label: 'Umum', icon: User, color: 'blue', themeColor: 'text-blue-500' },
+              { id: 'Orang Tua', label: 'Wali', icon: Users, color: 'green', themeColor: 'text-green-500' },
+              { id: 'Dinas', label: 'Dinas', icon: Briefcase, color: 'purple', themeColor: 'text-purple-500' }
+            ].map((cat) => (
+              <button
+                key={cat.id}
+                type="button"
+                onClick={() => setFormData({ ...formData, category: cat.id as any })}
+                className={`flex flex-col items-center justify-center p-3 rounded-2xl border-2 transition-all duration-300 gap-2 relative overflow-hidden group ${
+                  formData.category === cat.id
+                    ? `bg-${cat.color}-50 dark:bg-${cat.color}-500/10 border-${cat.color}-500 text-${cat.color}-600 dark:text-${cat.color}-400 shadow-md scale-105`
+                    : 'bg-white dark:bg-white/5 border-slate-100 dark:border-white/5 text-slate-500 hover:border-slate-200 dark:hover:border-white/10 hover:scale-[1.02]'
+                }`}
+              >
+                <cat.icon className={`w-6 h-6 transition-transform duration-300 ${formData.category === cat.id ? 'scale-110 animate-bounce-short' : 'group-hover:scale-110'}`} />
+                <span className="text-[11px] font-bold uppercase tracking-wider">{cat.label}</span>
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Nama */}
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300">
-              Nama Lengkap *
-            </label>
-            <VoiceInput onTranscript={(text) => setFormData({ ...formData, name: text })} />
-          </div>
-          <div className="relative">
-            <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+        <div className="relative group">
+          {/* Glow Aura */}
+          <div className={`absolute -inset-1 rounded-2xl bg-gradient-to-r from-transparent ${theme.aura} to-transparent opacity-0 group-focus-within:opacity-100 blur-xl transition-opacity duration-500`} />
+          
+          <div className={`relative transition-all duration-300 rounded-2xl border bg-white dark:bg-slate-950/40 ${
+            formData.name ? theme.border : 'border-slate-200 dark:border-white/10'
+          } group-focus-within:ring-4 ${theme.ring} ${theme.focusBorder} overflow-hidden`}>
+            {/* Icon Wrapper */}
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5">
+              <User className={`absolute inset-0 w-5 h-5 transition-all duration-300 ${
+                formData.name ? 'opacity-0 scale-50' : 'opacity-100 scale-100 text-slate-400'
+              } group-focus-within:opacity-0 group-focus-within:scale-50`} />
+              <UserCheck className={`absolute inset-0 w-5 h-5 transition-all duration-300 ${
+                formData.name ? `opacity-100 scale-100 ${theme.icon}` : 'opacity-0 scale-50'
+              } group-focus-within:opacity-100 group-focus-within:scale-110 ${theme.focusIcon}`} />
+            </div>
+            
             <input
               type="text"
+              id="name"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              placeholder="Masukkan nama lengkap"
-              className="w-full pl-12 pr-4 py-3 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              placeholder=" "
+              className="block w-full pl-12 pr-12 pt-6 pb-2 bg-transparent text-slate-900 dark:text-white text-sm focus:outline-none transition-all peer"
               disabled={loading}
               required
             />
+            
+            <label 
+              htmlFor="name"
+              className={`absolute left-12 top-4 text-slate-400 text-sm transition-all duration-300 pointer-events-none
+                ${theme.labelFocus} peer-focus:text-xs peer-focus:-translate-y-2.5 peer-focus:font-bold
+                ${formData.name ? `text-xs -translate-y-2.5 ${theme.text} font-bold` : ''}
+              `}
+            >
+              Nama Lengkap *
+            </label>
+
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 scale-75 opacity-70 hover:opacity-100 transition-opacity">
+              <VoiceInput onTranscript={(text) => setFormData({ ...formData, name: text })} />
+            </div>
           </div>
         </div>
 
         {/* Email */}
-        <div>
-          <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
-            Email (Opsional)
-          </label>
-          <div className="relative">
-            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+        <div className="relative group">
+          <div className={`absolute -inset-1 rounded-2xl bg-gradient-to-r from-transparent ${theme.aura} to-transparent opacity-0 group-focus-within:opacity-100 blur-xl transition-opacity duration-500`} />
+          
+          <div className={`relative transition-all duration-300 rounded-2xl border bg-white dark:bg-slate-950/40 ${
+            formData.email ? theme.border : 'border-slate-200 dark:border-white/10'
+          } group-focus-within:ring-4 ${theme.ring} ${theme.focusBorder} overflow-hidden`}>
+            {/* Icon Wrapper */}
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5">
+              <Mail className={`absolute inset-0 w-5 h-5 transition-all duration-300 ${
+                formData.email ? 'opacity-0 scale-50' : 'opacity-100 scale-100 text-slate-400'
+              } group-focus-within:opacity-0 group-focus-within:scale-50`} />
+              <MailOpen className={`absolute inset-0 w-5 h-5 transition-all duration-300 ${
+                formData.email ? `opacity-100 scale-100 ${theme.icon}` : 'opacity-0 scale-50'
+              } group-focus-within:opacity-100 group-focus-within:scale-110 ${theme.focusIcon}`} />
+            </div>
+            
             <input
               type="email"
+              id="email"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              placeholder="Masukkan email untuk konfirmasi"
-              className="w-full pl-12 pr-4 py-3 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              placeholder=" "
+              className="block w-full pl-12 pr-4 pt-6 pb-2 bg-transparent text-slate-900 dark:text-white text-sm focus:outline-none transition-all peer"
               disabled={loading}
+              required
             />
+            
+            <label 
+              htmlFor="email"
+              className={`absolute left-12 top-4 text-slate-400 text-sm transition-all duration-300 pointer-events-none
+                ${theme.labelFocus} peer-focus:text-xs peer-focus:-translate-y-2.5 peer-focus:font-bold
+                ${formData.email ? `text-xs -translate-y-2.5 ${theme.text} font-bold` : ''}
+              `}
+            >
+              Email *
+            </label>
           </div>
         </div>
 
         {/* Keperluan */}
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300">
-              Keperluan *
-            </label>
-            <VoiceInput onTranscript={(text) => setFormData({ ...formData, purpose: text })} />
-          </div>
-          <div className="relative">
-            <FileText className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+        <div className="relative group">
+          <div className={`absolute -inset-1 rounded-2xl bg-gradient-to-r from-transparent ${theme.aura} to-transparent opacity-0 group-focus-within:opacity-100 blur-xl transition-opacity duration-500`} />
+          
+          <div className={`relative transition-all duration-300 rounded-2xl border bg-white dark:bg-slate-950/40 ${
+            formData.purpose ? theme.border : 'border-slate-200 dark:border-white/10'
+          } group-focus-within:ring-4 ${theme.ring} ${theme.focusBorder} overflow-hidden`}>
+            {/* Icon Wrapper */}
+            <div className="absolute left-4 top-6 -translate-y-1/2 w-5 h-5">
+              <FileText className={`absolute inset-0 w-5 h-5 transition-all duration-300 ${
+                formData.purpose ? 'opacity-0 scale-50' : 'opacity-100 scale-100 text-slate-400'
+              } group-focus-within:opacity-0 group-focus-within:scale-50`} />
+              <ClipboardList className={`absolute inset-0 w-5 h-5 transition-all duration-300 ${
+                formData.purpose ? `opacity-100 scale-100 ${theme.icon}` : 'opacity-0 scale-50'
+              } group-focus-within:opacity-100 group-focus-within:scale-110 ${theme.focusIcon}`} />
+            </div>
+            
             <textarea
+              id="purpose"
               value={formData.purpose}
               onChange={(e) => setFormData({ ...formData, purpose: e.target.value })}
-              placeholder="Jelaskan keperluan kunjungan Anda"
+              placeholder=" "
               rows={3}
-              className="w-full pl-12 pr-4 py-3 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
+              className="block w-full pl-12 pr-12 pt-8 pb-2 bg-transparent text-slate-900 dark:text-white text-sm focus:outline-none transition-all resize-none peer"
               disabled={loading}
               required
             />
+            
+            <label 
+              htmlFor="purpose"
+              className={`absolute left-12 top-5 text-slate-400 text-sm transition-all duration-300 pointer-events-none
+                ${theme.labelFocus} peer-focus:text-xs peer-focus:-translate-y-3.5 peer-focus:font-bold
+                ${formData.purpose ? `text-xs -translate-y-3.5 ${theme.text} font-bold` : ''}
+              `}
+            >
+              Keperluan *
+            </label>
+
+            <div className="absolute right-3 top-6 -translate-y-1/2 scale-75 opacity-70 hover:opacity-100 transition-opacity">
+              <VoiceInput onTranscript={(text) => setFormData({ ...formData, purpose: text })} />
+            </div>
           </div>
         </div>
 
         {/* No HP */}
-        <div>
-          <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
-            No. HP (Opsional)
-          </label>
-          <div className="relative">
-            <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+        <div className="relative group">
+          <div className={`absolute -inset-1 rounded-2xl bg-gradient-to-r from-transparent ${theme.aura} to-transparent opacity-0 group-focus-within:opacity-100 blur-xl transition-opacity duration-500`} />
+          
+          <div className={`relative transition-all duration-300 rounded-2xl border bg-white dark:bg-slate-950/40 ${
+            formData.phone ? theme.border : 'border-slate-200 dark:border-white/10'
+          } group-focus-within:ring-4 ${theme.ring} ${theme.focusBorder} overflow-hidden`}>
+            {/* Icon Wrapper */}
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5">
+              <Phone className={`absolute inset-0 w-5 h-5 transition-all duration-300 ${
+                formData.phone ? 'opacity-0 scale-50' : 'opacity-100 scale-100 text-slate-400'
+              } group-focus-within:opacity-0 group-focus-within:scale-50`} />
+              <Smartphone className={`absolute inset-0 w-5 h-5 transition-all duration-300 ${
+                formData.phone ? `opacity-100 scale-100 ${theme.icon}` : 'opacity-0 scale-50'
+              } group-focus-within:opacity-100 group-focus-within:scale-110 ${theme.focusIcon}`} />
+            </div>
+            
             <input
               type="tel"
+              id="phone"
               value={formData.phone}
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              placeholder="Contoh: 081234567890"
-              className="w-full pl-12 pr-4 py-3 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              placeholder=" "
+              className="block w-full pl-12 pr-4 pt-6 pb-2 bg-transparent text-slate-900 dark:text-white text-sm focus:outline-none transition-all peer"
               disabled={loading}
             />
+            
+            <label 
+              htmlFor="phone"
+              className={`absolute left-12 top-4 text-slate-400 text-sm transition-all duration-300 pointer-events-none
+                ${theme.labelFocus} peer-focus:text-xs peer-focus:-translate-y-2.5 peer-focus:font-bold
+                ${formData.phone ? `text-xs -translate-y-2.5 ${theme.text} font-bold` : ''}
+              `}
+            >
+              No. WhatsApp (Opsional)
+            </label>
           </div>
         </div>
 
@@ -340,7 +487,9 @@ export function GuestForm({ showToast, onSuccess }: { showToast: ShowToastFn; on
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-3.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold transition-all shadow-lg shadow-blue-500/25 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className={`w-full py-4 rounded-2xl text-white font-bold text-lg transition-all duration-300 transform active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-3 group relative overflow-hidden shadow-lg ${
+            theme.bg
+          } ${theme.ring.replace('ring-', 'shadow-')}`}
         >
           {loading ? (
             <>

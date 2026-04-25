@@ -1,6 +1,6 @@
 "use client"
 
-import { Calendar, Clock, User, Phone, LogOut, Trash2, Filter, CheckCircle2, Circle } from "lucide-react"
+import { Calendar, Clock, User, Phone, LogOut, Trash2, Filter, CheckCircle2, Circle, MessageSquare } from "lucide-react"
 import { useEffect, useState } from "react"
 import { subscribeGuests, subscribeGuestsByDate, deleteGuest, checkOutGuest, type Guest } from "@/lib/helpdesk/guest-service"
 import {
@@ -13,6 +13,17 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
 import { format } from "date-fns"
 import { id } from "date-fns/locale"
 import type { ShowToastFn } from "./types"
@@ -22,6 +33,11 @@ export function GuestList({ showToast }: { showToast: ShowToastFn }) {
   const [filterDate, setFilterDate] = useState<"all" | "today" | "week">("all")
   const [loading, setLoading] = useState(true)
   const [deleteDialog, setDeleteDialog] = useState<{ isOpen: boolean; guest: Guest | null }>({ isOpen: false, guest: null })
+  const [checkOutDialog, setCheckOutDialog] = useState<{ isOpen: boolean; guest: Guest | null; notes: string }>({ 
+    isOpen: false, 
+    guest: null, 
+    notes: "" 
+  })
 
   useEffect(() => {
     setLoading(true)
@@ -58,16 +74,20 @@ export function GuestList({ showToast }: { showToast: ShowToastFn }) {
     return () => unsub?.()
   }, [filterDate])
 
-  const handleCheckOut = async (guest: Guest) => {
-    const notes = prompt("Catatan check-out (opsional):")
-    if (notes !== null) {
+  const handleCheckOut = (guest: Guest) => {
+    setCheckOutDialog({ isOpen: true, guest, notes: "" })
+  }
+
+  const confirmCheckOut = async () => {
+    if (checkOutDialog.guest) {
       try {
-        await checkOutGuest(guest.id, notes || undefined)
-        showToast(`${guest.name} berhasil check-out`, "success")
+        await checkOutGuest(checkOutDialog.guest.id, checkOutDialog.notes || undefined)
+        showToast(`${checkOutDialog.guest.name} berhasil check-out`, "success")
       } catch {
         showToast("Gagal check-out tamu", "error")
       }
     }
+    setCheckOutDialog({ isOpen: false, guest: null, notes: "" })
   }
 
   const handleDelete = async (guest: Guest) => {
@@ -320,6 +340,43 @@ export function GuestList({ showToast }: { showToast: ShowToastFn }) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={checkOutDialog.isOpen} onOpenChange={(open) => !open && setCheckOutDialog(prev => ({ ...prev, isOpen: false }))}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <LogOut className="w-5 h-5 text-amber-500" />
+              Check-out Tamu
+            </DialogTitle>
+            <DialogDescription>
+              Selesaikan kunjungan untuk <strong>{checkOutDialog.guest?.name}</strong>.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="notes" className="flex items-center gap-2">
+                <MessageSquare className="w-4 h-4 text-slate-500" />
+                Catatan (opsional)
+              </Label>
+              <Textarea
+                id="notes"
+                placeholder="Tambahkan catatan jika ada..."
+                className="min-h-[100px] resize-none"
+                value={checkOutDialog.notes}
+                onChange={(e) => setCheckOutDialog(prev => ({ ...prev, notes: e.target.value }))}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCheckOutDialog(prev => ({ ...prev, isOpen: false }))}>
+              Batal
+            </Button>
+            <Button onClick={confirmCheckOut} className="bg-amber-600 hover:bg-amber-500">
+              Check-out Sekarang
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
