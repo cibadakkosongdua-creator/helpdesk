@@ -61,14 +61,18 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // Survei/Feedback: user login boleh submit. Admin bisa baca semua.
+    // Survei/Feedback: user login boleh submit. Guest (tanpa login) juga boleh submit (untuk IKM tamu). Admin bisa baca semua.
     match /feedbacks/{feedbackId} {
-      allow create: if isAuthenticated()
+      allow create: if (isAuthenticated()
                     && request.resource.data.keys().hasAll(['service','rating','feedback','createdAt'])
                     && request.resource.data.rating is number
                     && request.resource.data.rating >= 1
                     && request.resource.data.rating <= 5
-                    && (request.resource.data.reporterUid == null || request.resource.data.reporterUid == request.auth.uid);
+                    && (request.resource.data.reporterUid == null || request.resource.data.reporterUid == request.auth.uid))
+                    || (request.resource.data.keys().hasAll(['service','rating','feedback','createdAt'])
+                    && request.resource.data.rating is number
+                    && request.resource.data.rating >= 1
+                    && request.resource.data.rating <= 5); // Guest feedback (IKM tamu)
       allow read: if isAdmin() || (isAuthenticated() && resource.data.reporterUid == request.auth.uid);
       allow update, delete: if isAdmin();
     }
@@ -94,6 +98,18 @@ service cloud.firestore {
                           && resource.data.uid == request.auth.uid;
       allow delete: if isAuthenticated()
                     && resource.data.uid == request.auth.uid;
+    }
+
+    // Guests (Buku Tamu): publik boleh create (tanpa login), admin boleh read/update/delete.
+    match /guests/{guestId} {
+      allow create: if request.resource.data.keys().hasAll(['name','category','purpose','checkInTime','status'])
+                    && request.resource.data.status == 'checked-in'
+                    && request.resource.data.checkInTime is number;
+      allow read, list: if isAdmin();
+      allow update: if isAdmin()
+                      && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['checkOutTime','status','notes'])
+                      && request.resource.data.status == 'checked-out';
+      allow delete: if isAdmin();
     }
 
     // Default deny

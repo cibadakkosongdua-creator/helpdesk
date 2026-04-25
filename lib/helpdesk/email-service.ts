@@ -38,36 +38,38 @@ const EMAIL_CONFIG = {
 
 // Shared email header with logo
 const emailHeader = `
-  <div style="background: linear-gradient(135deg, ${EMAIL_CONFIG.primaryColor}, ${EMAIL_CONFIG.accentColor}); padding: 32px 24px; text-align: center; border-radius: 12px 12px 0 0;">
-    <img src="${EMAIL_CONFIG.logoUrl}" alt="Logo SDN 02 Cibadak" style="width: 80px; height: 80px; margin-bottom: 16px; border-radius: 50%; background: white; padding: 8px;" />
-    <h1 style="margin: 0; font-size: 28px; font-weight: 700; color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">${EMAIL_CONFIG.schoolName}</h1>
-    <p style="margin: 8px 0 0; font-size: 14px; color: rgba(255,255,255,0.9);">Sistem Helpdesk Digital</p>
+  <div style="background-color: #ffffff; padding: 40px 20px; text-align: center; border-bottom: 1px solid #f1f5f9;">
+    <img src="${EMAIL_CONFIG.logoUrl}" alt="Logo SDN 02 Cibadak" style="width: 70px; height: 70px; margin-bottom: 20px;" />
+    <h1 style="margin: 0; font-size: 24px; font-weight: 800; color: #0f172a; letter-spacing: -0.025em; line-height: 1.2;">${EMAIL_CONFIG.schoolName}</h1>
+    <p style="margin: 8px 0 0; font-size: 14px; font-weight: 500; color: #64748b; text-transform: uppercase; letter-spacing: 0.1em;">Smart Helpdesk System</p>
   </div>
 `
 
 // Shared email footer with operator info
 const emailFooter = `
-  <div style="background: #1e293b; padding: 32px 24px; border-radius: 0 0 12px 12px; color: white;">
-    <div style="text-align: center; margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid rgba(255,255,255,0.1);">
-      <p style="margin: 0 0 8px; font-size: 14px; font-weight: 600; color: rgba(255,255,255,0.7);">Dikelola oleh:</p>
-      <p style="margin: 0; font-size: 16px; font-weight: 700; color: white;">${EMAIL_CONFIG.operatorName}</p>
-      <p style="margin: 4px 0 0; font-size: 13px; color: rgba(255,255,255,0.7);">${EMAIL_CONFIG.operatorRole}</p>
-      <p style="margin: 4px 0 0; font-size: 13px; color: rgba(255,255,255,0.7);">${EMAIL_CONFIG.operatorPhone}</p>
+  <div style="background-color: #f8fafc; padding: 48px 24px; text-align: center; border-top: 1px solid #f1f5f9;">
+    <div style="margin-bottom: 32px;">
+      <p style="margin: 0 0 12px; font-size: 12px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em;">Dikelola Oleh</p>
+      <p style="margin: 0; font-size: 16px; font-weight: 700; color: #1e293b;">${EMAIL_CONFIG.operatorName}</p>
+      <p style="margin: 4px 0 0; font-size: 14px; color: #64748b;">${EMAIL_CONFIG.operatorRole}</p>
+      <p style="margin: 8px 0 0; font-size: 14px; font-weight: 600; color: ${EMAIL_CONFIG.accentColor};">${EMAIL_CONFIG.operatorPhone}</p>
     </div>
-    <div style="text-align: center;">
-      <p style="margin: 0 0 8px; font-size: 14px; font-weight: 600; color: rgba(255,255,255,0.7);">${EMAIL_CONFIG.schoolName}</p>
-      <p style="margin: 0; font-size: 12px; color: rgba(255,255,255,0.6); line-height: 1.6;">
+    
+    <div style="margin-bottom: 32px; padding: 24px; background-color: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0;">
+      <p style="margin: 0 0 8px; font-size: 14px; font-weight: 700; color: #1e293b;">${EMAIL_CONFIG.schoolName}</p>
+      <p style="margin: 0; font-size: 13px; color: #64748b; line-height: 1.6;">
         ${EMAIL_CONFIG.schoolAddress}<br>
-        Telp: ${EMAIL_CONFIG.schoolPhone} | Email: ${EMAIL_CONFIG.schoolEmail}<br>
-        <a href="${EMAIL_CONFIG.schoolWebsite}" style="color: ${EMAIL_CONFIG.accentColor}; text-decoration: none;">${EMAIL_CONFIG.schoolWebsite.replace('https://', '')}</a>
+        Telp: ${EMAIL_CONFIG.schoolPhone} &bull; Email: ${EMAIL_CONFIG.schoolEmail}
       </p>
+      <div style="margin-top: 12px;">
+        <a href="${EMAIL_CONFIG.schoolWebsite}" style="font-size: 13px; color: ${EMAIL_CONFIG.accentColor}; text-decoration: none; font-weight: 600;">${EMAIL_CONFIG.schoolWebsite.replace('https://', '')}</a>
+      </div>
     </div>
-    <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.1); text-align: center;">
-      <p style="margin: 0; font-size: 11px; color: rgba(255,255,255,0.5);">
-        Email ini dikirim secara otomatis oleh sistem Helpdesk ${EMAIL_CONFIG.schoolName}.<br>
-        Mohon tidak membalas email ini secara langsung.
-      </p>
-    </div>
+
+    <p style="margin: 0; font-size: 12px; color: #94a3b8; line-height: 1.6;">
+      Email ini dikirim secara otomatis oleh sistem. Mohon tidak membalas email ini.<br>
+      &copy; ${new Date().getFullYear()} ${EMAIL_CONFIG.schoolName}. All rights reserved.
+    </p>
   </div>
 `
 
@@ -124,40 +126,45 @@ export function emailNewTicketAdmin(data: {
     to: process.env.ADMIN_EMAIL || "admin@example.com",
     subject: `[${ticketCode}] Tiket Baru dari ${reporterName}`,
     html: `
-      <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+      <div style="font-family: 'Inter', system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 24px; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);">
         ${emailHeader}
-        <div style="padding: 32px 24px; background: #f8fafc;">
-          <div style="background: white; border-radius: 12px; padding: 24px; border: 1px solid #e2e8f0; margin-bottom: 24px;">
-            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
-              <div style="background: linear-gradient(135deg, ${EMAIL_CONFIG.primaryColor}, ${EMAIL_CONFIG.accentColor}); color: white; padding: 12px 20px; border-radius: 8px; font-weight: 700; font-size: 18px;">
-                ${ticketCode}
-              </div>
-              <div style="background: ${bg}; color: ${color}; padding: 6px 16px; border-radius: 999px; font-weight: 600; font-size: 12px;">
-                ${priority}
-              </div>
+        <div style="padding: 40px 32px; background-color: #ffffff;">
+          <div style="margin-bottom: 32px; text-align: center;">
+            <div style="display: inline-block; padding: 12px 24px; background-color: #f1f5f9; border-radius: 12px; margin-bottom: 16px;">
+              <span style="font-family: monospace; font-size: 24px; font-weight: 800; color: ${EMAIL_CONFIG.primaryColor}; letter-spacing: 0.1em;">${ticketCode}</span>
             </div>
+            <h2 style="margin: 0; font-size: 20px; font-weight: 700; color: #0f172a;">Tiket Bantuan Baru</h2>
+          </div>
+
+          <div style="background-color: #f8fafc; border-radius: 20px; padding: 24px; border: 1px solid #f1f5f9; margin-bottom: 32px;">
             <table style="width: 100%; border-collapse: collapse;">
               <tr>
-                <td style="padding: 12px 0; color: #64748b; width: 120px; font-weight: 500;">Pelapor</td>
-                <td style="padding: 12px 0; font-weight: 600; color: #1e293b; font-size: 16px;">${reporterName}</td>
+                <td style="padding: 8px 0; font-size: 13px; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Pelapor</td>
+                <td style="padding: 8px 0; font-size: 15px; color: #1e293b; font-weight: 700; text-align: right;">${reporterName}</td>
               </tr>
               <tr>
-                <td style="padding: 12px 0; color: #64748b; font-weight: 500;">Layanan</td>
-                <td style="padding: 12px 0; font-weight: 600; color: #1e293b;">${service}</td>
+                <td style="padding: 8px 0; font-size: 13px; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Layanan</td>
+                <td style="padding: 8px 0; font-size: 15px; color: #1e293b; font-weight: 700; text-align: right;">${service}</td>
               </tr>
               <tr>
-                <td style="padding: 12px 0; color: #64748b; font-weight: 500;">Departemen</td>
-                <td style="padding: 12px 0; font-weight: 600; color: #1e293b;">${department}</td>
+                <td style="padding: 8px 0; font-size: 13px; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Prioritas</td>
+                <td style="padding: 8px 0; text-align: right;">
+                  <span style="padding: 4px 12px; background-color: ${bg}; color: ${color}; border-radius: 999px; font-size: 12px; font-weight: 700;">${priority}</span>
+                </td>
               </tr>
             </table>
           </div>
-          <div style="background: white; border-radius: 12px; padding: 24px; border: 1px solid #e2e8f0;">
-            <p style="margin: 0 0 12px; font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">Detail Keluhan</p>
-            <p style="margin: 0; color: #334155; line-height: 1.7; white-space: pre-wrap;">${details}</p>
+
+          <div style="margin-bottom: 40px;">
+            <p style="margin: 0 0 12px; font-size: 13px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Detail Keluhan</p>
+            <div style="background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px; color: #334155; line-height: 1.6; font-size: 15px;">
+              ${details}
+            </div>
           </div>
-          <div style="text-align: center; margin-top: 32px;">
-            <a href="${ticketUrl}" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, ${EMAIL_CONFIG.primaryColor}, ${EMAIL_CONFIG.accentColor}); color: white; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);">
-              Lihat & Tangani Tiket
+
+          <div style="text-align: center;">
+            <a href="${ticketUrl}" style="display: inline-block; padding: 18px 36px; background-color: ${EMAIL_CONFIG.primaryColor}; color: #ffffff; text-decoration: none; border-radius: 16px; font-weight: 700; font-size: 16px; box-shadow: 0 4px 6px -1px rgba(30, 64, 175, 0.2);">
+              Tanggapi Tiket Sekarang
             </a>
           </div>
         </div>
@@ -203,27 +210,32 @@ export function emailReplyUser(data: {
     to: "", // Will be set to reporterEmail
     subject: `[${ticketCode}] Ada Balasan dari Admin`,
     html: `
-      <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+      <div style="font-family: 'Inter', system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 24px; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);">
         ${emailHeader}
-        <div style="padding: 32px 24px; background: #f8fafc;">
-          <div style="background: white; border-radius: 12px; padding: 24px; border: 1px solid #e2e8f0; margin-bottom: 24px;">
-            <p style="margin: 0 0 8px; color: #64748b; font-size: 14px;">Yth. Bapak/Ibu</p>
-            <p style="margin: 0 0 20px; color: #1e293b; font-size: 18px; font-weight: 600;">${reporterName}</p>
-            <p style="margin: 0 0 16px; color: #334155; line-height: 1.6;">
-              Admin <strong style="color: ${EMAIL_CONFIG.accentColor};">${adminName}</strong> telah memberikan balasan untuk tiket Anda:
+        <div style="padding: 40px 32px; background-color: #ffffff;">
+          <div style="margin-bottom: 32px;">
+            <p style="margin: 0 0 4px; font-size: 14px; font-weight: 600; color: #64748b;">Halo Bapak/Ibu,</p>
+            <h2 style="margin: 0; font-size: 24px; font-weight: 800; color: #0f172a;">${reporterName}</h2>
+          </div>
+
+          <div style="background-color: #f8fafc; border-radius: 20px; padding: 24px; border: 1px solid #f1f5f9; margin-bottom: 32px;">
+            <p style="margin: 0 0 16px; color: #334155; line-height: 1.6; font-size: 15px;">
+              Admin <strong style="color: ${EMAIL_CONFIG.primaryColor};">${adminName}</strong> baru saja membalas tiket bantuan Anda:
             </p>
-            <div style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(30, 64, 175, 0.05)); border-radius: 12px; padding: 20px; border-left: 4px solid ${EMAIL_CONFIG.accentColor};">
-              <p style="margin: 0; color: #334155; line-height: 1.7; white-space: pre-wrap;">${replyText}</p>
-            </div>
-            <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid #e2e8f0;">
-              <p style="margin: 0; font-size: 13px; color: #64748b;">
-                Kode Tiket: <strong style="color: ${EMAIL_CONFIG.primaryColor};">${ticketCode}</strong>
-              </p>
+            <div style="background-color: #ffffff; border: 1px solid #e2e8f0; border-left: 4px solid ${EMAIL_CONFIG.accentColor}; border-radius: 12px; padding: 20px; color: #1e293b; font-size: 15px; line-height: 1.7; font-style: italic;">
+              "${replyText}"
             </div>
           </div>
-          <div style="text-align: center; margin-top: 32px;">
-            <a href="${ticketUrl}" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, ${EMAIL_CONFIG.primaryColor}, ${EMAIL_CONFIG.accentColor}); color: white; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);">
-              Lihat Percakapan Lengkap
+
+          <div style="background-color: #f1f5f9; border-radius: 12px; padding: 12px 20px; display: inline-block; margin-bottom: 32px;">
+            <p style="margin: 0; font-size: 13px; color: #64748b; font-weight: 600;">
+              Kode Tiket: <span style="color: ${EMAIL_CONFIG.primaryColor}; font-family: monospace; font-weight: 800;">${ticketCode}</span>
+            </p>
+          </div>
+
+          <div style="text-align: center;">
+            <a href="${ticketUrl}" style="display: inline-block; padding: 18px 36px; background-color: ${EMAIL_CONFIG.primaryColor}; color: #ffffff; text-decoration: none; border-radius: 16px; font-weight: 700; font-size: 16px; box-shadow: 0 4px 6px -1px rgba(30, 64, 175, 0.2);">
+              Lihat Selengkapnya
             </a>
           </div>
         </div>
@@ -240,6 +252,92 @@ Admin ${adminName} telah memberikan balasan untuk tiket Anda:
 "${replyText}"
 
 Lihat percakapan lengkap: ${ticketUrl}
+
+---
+${EMAIL_CONFIG.schoolName}
+${EMAIL_CONFIG.schoolAddress}
+Dikelola oleh: ${EMAIL_CONFIG.operatorName} (${EMAIL_CONFIG.operatorRole})
+    `.trim(),
+  }
+}
+
+/**
+ * Email template: Guest check-in confirmation
+ */
+export function emailGuestConfirmation(data: {
+  guestName: string
+  category: string
+  purpose: string
+  checkInTime: string
+  appUrl: string
+}): EmailTemplate {
+  const { guestName, category, purpose, checkInTime, appUrl } = data
+
+  return {
+    to: "", // Will be set to guest email
+    subject: `Konfirmasi Kunjungan - ${EMAIL_CONFIG.schoolName}`,
+    html: `
+      <div style="font-family: 'Inter', system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 24px; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);">
+        ${emailHeader}
+        <div style="padding: 40px 32px; background-color: #ffffff;">
+          <div style="margin-bottom: 32px; text-align: center;">
+            <p style="margin: 0 0 8px; font-size: 14px; font-weight: 600; color: #64748b;">Halo,</p>
+            <h2 style="margin: 0; font-size: 24px; font-weight: 800; color: #0f172a;">${guestName}</h2>
+          </div>
+
+          <div style="background-color: #f8fafc; border-radius: 20px; padding: 24px; border: 1px solid #f1f5f9; margin-bottom: 32px;">
+            <p style="margin: 0 0 20px; color: #334155; line-height: 1.6; font-size: 15px; text-align: center;">
+              Terima kasih telah berkunjung ke <strong>${EMAIL_CONFIG.schoolName}</strong>. Kehadiran Anda telah kami catat dalam sistem.
+            </p>
+            
+            <div style="background-color: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden;">
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                  <td style="padding: 16px; font-size: 13px; color: #64748b; font-weight: 600; text-transform: uppercase; border-bottom: 1px solid #f1f5f9;">Kategori</td>
+                  <td style="padding: 16px; font-size: 15px; color: #1e293b; font-weight: 700; border-bottom: 1px solid #f1f5f9; text-align: right;">${category}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 16px; font-size: 13px; color: #64748b; font-weight: 600; text-transform: uppercase; border-bottom: 1px solid #f1f5f9;">Keperluan</td>
+                  <td style="padding: 16px; font-size: 15px; color: #1e293b; font-weight: 700; border-bottom: 1px solid #f1f5f9; text-align: right;">${purpose}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 16px; font-size: 13px; color: #64748b; font-weight: 600; text-transform: uppercase;">Check-in</td>
+                  <td style="padding: 16px; font-size: 15px; color: #1e293b; font-weight: 700; text-align: right;">${checkInTime}</td>
+                </tr>
+              </table>
+            </div>
+          </div>
+
+          <div style="background-color: #eff6ff; border-radius: 20px; padding: 24px; border: 1px solid #dbeafe; margin-bottom: 32px; text-align: center;">
+            <p style="margin: 0 0 12px; color: ${EMAIL_CONFIG.primaryColor}; font-weight: 800; font-size: 18px;">
+              📝 Survei Kepuasan
+            </p>
+            <p style="margin: 0; color: #1e40af; font-size: 14px; line-height: 1.6;">
+              Bantu kami meningkatkan kualitas layanan dengan memberikan feedback singkat melalui link di bawah ini.
+            </p>
+          </div>
+
+          <div style="text-align: center;">
+            <a href="${appUrl}/tamu" style="display: inline-block; padding: 18px 36px; background-color: ${EMAIL_CONFIG.primaryColor}; color: #ffffff; text-decoration: none; border-radius: 16px; font-weight: 700; font-size: 16px; box-shadow: 0 4px 6px -1px rgba(30, 64, 175, 0.2);">
+              Isi Survei Sekarang
+            </a>
+          </div>
+        </div>
+        ${emailFooter}
+      </div>
+    `,
+    text: `
+Konfirmasi Kunjungan - ${EMAIL_CONFIG.schoolName}
+
+Yth. ${guestName},
+
+Terima kasih telah berkunjung ke ${EMAIL_CONFIG.schoolName}. Data kehadiran Anda telah tercatat.
+
+Kategori: ${category}
+Keperluan: ${purpose}
+Check-in: ${checkInTime}
+
+Bantu kami meningkatkan layanan dengan mengisi survei kepuasan: ${appUrl}/tamu
 
 ---
 ${EMAIL_CONFIG.schoolName}
@@ -275,37 +373,41 @@ export function emailStatusChanged(data: {
     to: reporterEmail,
     subject: `[${ticketCode}] Status Tiket: ${newStatus}`,
     html: `
-      <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+      <div style="font-family: 'Inter', system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 24px; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);">
         ${emailHeader}
-        <div style="padding: 32px 24px; background: #f8fafc; text-align: center;">
-          <div style="background: white; border-radius: 12px; padding: 32px 24px; border: 1px solid #e2e8f0; margin-bottom: 24px;">
-            <p style="margin: 0 0 8px; color: #64748b; font-size: 14px;">Yth. Bapak/Ibu</p>
-            <p style="margin: 0 0 24px; color: #1e293b; font-size: 18px; font-weight: 600;">${reporterName}</p>
-            <p style="margin: 0 0 24px; color: #334155; line-height: 1.6;">
-              Status tiket Anda telah diperbarui menjadi:
+        <div style="padding: 40px 32px; background-color: #ffffff; text-align: center;">
+          <div style="margin-bottom: 32px;">
+            <p style="margin: 0 0 8px; font-size: 14px; font-weight: 600; color: #64748b;">Update Status Tiket</p>
+            <h2 style="margin: 0; font-size: 24px; font-weight: 800; color: #0f172a;">${reporterName}</h2>
+          </div>
+
+          <div style="background-color: #f8fafc; border-radius: 20px; padding: 32px 24px; border: 1px solid #f1f5f9; margin-bottom: 32px;">
+            <p style="margin: 0 0 24px; color: #334155; line-height: 1.6; font-size: 15px;">
+              Status tiket bantuan Anda telah diperbarui menjadi:
             </p>
-            <div style="display: inline-block; padding: 16px 40px; background: ${bg}; border-radius: 999px; border: 2px solid ${color};">
-              <span style="font-size: 20px; font-weight: 700; color: ${color};">${newStatus}</span>
+            <div style="display: inline-block; padding: 16px 40px; background-color: ${bg}; border-radius: 16px; border: 2px solid ${color};">
+              <span style="font-size: 20px; font-weight: 800; color: ${color}; text-transform: uppercase; letter-spacing: 0.05em;">${newStatus}</span>
             </div>
-            <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid #e2e8f0;">
-              <p style="margin: 0; font-size: 13px; color: #64748b;">
-                Kode Tiket: <strong style="color: ${EMAIL_CONFIG.primaryColor};">${ticketCode}</strong>
+            <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
+              <p style="margin: 0; font-size: 13px; color: #64748b; font-weight: 600;">
+                Kode Tiket: <span style="color: ${EMAIL_CONFIG.primaryColor}; font-family: monospace; font-weight: 800;">${ticketCode}</span>
               </p>
             </div>
           </div>
+
           ${newStatus === "Resolved" ? `
-          <div style="background: linear-gradient(135deg, rgba(22, 163, 74, 0.1), rgba(22, 163, 74, 0.05)); border-radius: 12px; padding: 24px; border: 1px solid rgba(22, 163, 74, 0.2); margin-bottom: 24px;">
-            <p style="margin: 0 0 8px; color: #166534; font-weight: 700; font-size: 18px;">
-              Tiket Anda telah diselesaikan
+          <div style="background-color: #f0fdf4; border-radius: 20px; padding: 24px; border: 1px solid #dcfce7; margin-bottom: 32px;">
+            <p style="margin: 0 0 8px; color: #166534; font-weight: 800; font-size: 18px;">
+              Tiket Selesai
             </p>
             <p style="margin: 0; color: #166534; font-size: 14px; line-height: 1.6;">
-              Terima kasih telah menggunakan layanan Helpdesk ${EMAIL_CONFIG.schoolName}.<br>
-              Semoga keluhan Anda dapat ditangani dengan baik.
+              Terima kasih telah menggunakan layanan Helpdesk <strong>${EMAIL_CONFIG.schoolName}</strong>. Kami senang dapat membantu Anda.
             </p>
           </div>
           ` : ""}
-          <div style="text-align: center; margin-top: 32px;">
-            <a href="${ticketUrl}" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, ${EMAIL_CONFIG.primaryColor}, ${EMAIL_CONFIG.accentColor}); color: white; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);">
+
+          <div style="text-align: center;">
+            <a href="${ticketUrl}" style="display: inline-block; padding: 18px 36px; background-color: ${EMAIL_CONFIG.primaryColor}; color: #ffffff; text-decoration: none; border-radius: 16px; font-weight: 700; font-size: 16px; box-shadow: 0 4px 6px -1px rgba(30, 64, 175, 0.2);">
               Lihat Detail Tiket
             </a>
           </div>

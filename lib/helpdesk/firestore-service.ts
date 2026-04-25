@@ -135,6 +135,16 @@ function toMillis(v: unknown): number {
   return Date.now()
 }
 
+function sanitize<T extends object>(obj: T): T {
+  const res = { ...obj }
+  Object.keys(res).forEach((key) => {
+    if ((res as any)[key] === undefined || (res as any)[key] === null) {
+      delete (res as any)[key]
+    }
+  })
+  return res
+}
+
 export function generateTicketCode(): string {
   // 4 hex chars from timestamp + random — easy to read, low collision at school scale
   const chars = "0123456789ABCDEF"
@@ -273,10 +283,10 @@ export async function saveTicket(
 
   try {
     if (db) {
-      const ref = await addDoc(collection(db, TICKETS_COL), {
+      const ref = await addDoc(collection(db, TICKETS_COL), sanitize({
         ...basePayload,
         createdAt: nowMs,
-      })
+      }))
       const created: Ticket = { ...basePayload, id: ref.id, createdAt: nowMs }
       const list = lsRead<Ticket>(TICKETS_LS)
       list.unshift(created)
@@ -419,7 +429,7 @@ export async function rateTicket(
       await updateDoc(doc(db, TICKETS_COL, id), patch)
 
       // Also create a feedback entry (unified with IKM survey)
-      await addDoc(collection(db, FEEDBACKS_COL), {
+      await addDoc(collection(db, FEEDBACKS_COL), sanitize({
         service: ticket.service,
         rating,
         feedback: comment || "",
@@ -428,7 +438,7 @@ export async function rateTicket(
         reporterEmail: ticket.reporterEmail || undefined,
         reporterUid: ticket.reporterUid || undefined,
         createdAt: nowMs,
-      })
+      }))
     }
   } catch (err) {
     console.warn("[helpdesk] rateTicket fail:", (err as Error)?.message)
@@ -549,10 +559,10 @@ export async function addReply(
 
   try {
     if (db) {
-      const ref = await addDoc(collection(db, REPLIES_COL), {
+      const ref = await addDoc(collection(db, REPLIES_COL), sanitize({
         ...reply,
         createdAt: nowMs,
-      })
+      }))
       id = ref.id
     }
   } catch (err) {
@@ -721,10 +731,10 @@ export async function saveFeedback(
   const nowMs = Date.now()
   try {
     if (db) {
-      const ref = await addDoc(collection(db, FEEDBACKS_COL), {
+      const ref = await addDoc(collection(db, FEEDBACKS_COL), sanitize({
         ...f,
         createdAt: nowMs,
-      })
+      }))
       const created: Feedback = { ...f, id: ref.id, createdAt: nowMs }
       const list = lsRead<Feedback>(FEEDBACKS_LS)
       list.unshift(created)
@@ -732,8 +742,8 @@ export async function saveFeedback(
       return created
     }
   } catch (err) {
-    console.warn("[helpdesk] saveFeedback firestore fail:", (err as Error)?.message)
-  }
+      console.warn("[helpdesk] saveFeedback firestore fail:", (err as Error)?.message, f)
+    }
   const created: Feedback = {
     ...f,
     id: `FB-${nowMs.toString(36).toUpperCase()}`,
@@ -758,10 +768,10 @@ export async function logAudit(
   lsWrite(AUDIT_LS, list.slice(0, 500))
   try {
     if (db) {
-      await addDoc(collection(db, AUDIT_COL), {
+      await addDoc(collection(db, AUDIT_COL), sanitize({
         ...entry,
         createdAt: nowMs,
-      })
+      }))
     }
   } catch {
     /* ignore */
@@ -900,7 +910,7 @@ export async function saveChatSession(
   if (!db) return newSession.id
 
   try {
-    const ref = await addDoc(collection(db, CHAT_SESSIONS_COL), session)
+    const ref = await addDoc(collection(db, CHAT_SESSIONS_COL), sanitize(session))
     return ref.id
   } catch {
     return newSession.id

@@ -25,6 +25,7 @@ import {
   Star,
   Ticket as TicketIcon,
   TrendingUp,
+  User,
   X,
   type LucideIcon,
 } from "lucide-react"
@@ -35,18 +36,19 @@ import { useSettingsServices } from "@/hooks/use-settings-services"
 import { usePagination } from "@/hooks/use-pagination"
 import { PaginationControls } from "./pagination-controls"
 import {
-  deleteTicket,
-  subscribeAuditLogs,
-  subscribeFeedbacks,
   subscribeTickets,
+  subscribeFeedbacks,
+  subscribeAuditLogs,
   updateTicketStatus,
-  type AuditLog,
-  type Department,
-  type Feedback,
+  deleteTicket,
   type Ticket,
-  type TicketPriority,
+  type Feedback,
+  type AuditLog,
   type TicketStatus,
+  type TicketPriority,
+  type Department,
 } from "@/lib/helpdesk/firestore-service"
+import { subscribeGuests, type Guest } from "@/lib/helpdesk/guest-service"
 import { saveSettings } from "@/lib/helpdesk/settings-service"
 import { useBrowserNotification } from "@/hooks/use-browser-notification"
 import { useSoundAlert } from "@/hooks/use-sound-alert"
@@ -55,9 +57,11 @@ import { AdminSettings } from "./admin-settings"
 import { AnalyticsCharts } from "./analytics-charts"
 import { TicketDetailDialog } from "./ticket-detail-dialog"
 import { ConfirmDialog } from "./confirm-dialog"
+import { GuestList } from "./guest-list"
+import { GuestQrGenerator } from "./guest-qr-generator"
 import type { ShowToastFn } from "./types"
 
-type Tab = "tickets" | "analytics" | "surveys" | "audit" | "settings"
+type Tab = "tickets" | "analytics" | "surveys" | "audit" | "guests" | "settings"
 type DateRange = "all" | "today" | "7d" | "30d"
 
 export function AdminDashboard({
@@ -71,6 +75,7 @@ export function AdminDashboard({
   const [tickets, setTickets] = useState<Ticket[]>([])
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([])
   const [audits, setAudits] = useState<AuditLog[]>([])
+  const [guests, setGuests] = useState<Guest[]>([])
   const [tab, setTab] = useState<Tab>("tickets")
   const [loadingTickets, setLoadingTickets] = useState(true)
   const [loadingFeedbacks, setLoadingFeedbacks] = useState(true)
@@ -138,10 +143,14 @@ export function AdminDashboard({
       setLoadingFeedbacks(false)
     })
     const unsubA = subscribeAuditLogs(setAudits)
+    const unsubG = subscribeGuests((list) => {
+      setGuests(list)
+    })
     return () => {
       unsubT()
       unsubF()
       unsubA()
+      unsubG()
     }
   }, [])
 
@@ -157,16 +166,16 @@ export function AdminDashboard({
     const open = tickets.filter((t) => t.status === "Open").length
     const urgent = tickets.filter((t) => t.priority === "Urgent" && t.status !== "Resolved").length
 
-    // Hitung rating dari feedbacks (sudah termasuk rating tiket baru)
-    const feedbackRatingSum = feedbacks.reduce((a, b) => a + b.rating, 0)
-    const feedbackRatingCount = feedbacks.length
+    // Hitung rating dari feedbacks (sudah termasuk rating tiket baru dan buku tamu)
+    const feedbackRatingSum = feedbacks.reduce((a, b) => a + Number(b.rating || 0), 0)
+    const feedbackRatingCount = feedbacks.filter(f => (f.rating || 0) > 0).length
 
     // Untuk backward compatibility: rating lama di tiket yang belum ada di feedbacks
     const feedbackTicketIds = new Set(feedbacks.filter((f) => f.ticketId).map((f) => f.ticketId))
     const oldTicketRatings = tickets.filter(
-      (t) => t.rating && t.rating > 0 && !feedbackTicketIds.has(t.id)
+      (t) => (t.rating || 0) > 0 && !feedbackTicketIds.has(t.id)
     )
-    const oldTicketRatingSum = oldTicketRatings.reduce((a, b) => a + (b.rating ?? 0), 0)
+    const oldTicketRatingSum = oldTicketRatings.reduce((a, b) => a + Number(b.rating || 0), 0)
     const oldTicketRatingCount = oldTicketRatings.length
 
     // Gabungkan feedbacks + rating lama
@@ -229,8 +238,8 @@ export function AdminDashboard({
     })
 
     // Sort
-    const priorityOrder = { Urgent: 4, Tinggi: 3, Sedang: 2, Rendah: 1 }
-    const statusOrder = { Open: 3, "In Progress": 2, Resolved: 1 }
+    const priorityOrder: Record<TicketPriority, number> = { Urgent: 4, Tinggi: 3, Sedang: 2, Rendah: 1 }
+    const statusOrder: Record<TicketStatus, number> = { Open: 3, "In Progress": 2, Resolved: 1 }
 
     return [...filtered].sort((a, b) => {
       let comparison = 0
@@ -523,6 +532,12 @@ export function AdminDashboard({
               {feedbacks.length}
             </span>
           </TabButton>
+          <TabButton active={tab === "guests"} onClick={() => setTab("guests")}>
+            <User className="w-4 h-4" /> Tamu
+            <span className="ml-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-white/10">
+              {guests.filter((g) => g.status === "checked-in").length}
+            </span>
+          </TabButton>
           <TabButton active={tab === "audit"} onClick={() => setTab("audit")}>
             <Shield className="w-4 h-4" /> Audit
           </TabButton>
@@ -745,7 +760,12 @@ export function AdminDashboard({
         ))}
 
       {tab === "analytics" && <AnalyticsCharts tickets={tickets} feedbacks={feedbacks} services={settingsServices} />}
-
+      {tab === "guests" && (
+        <div className="space-y-6">
+          <GuestList showToast={showToast} />
+          <GuestQrGenerator showToast={showToast} />
+        </div>
+      )}
       {tab === "surveys" &&
         (loadingFeedbacks ? (
           <SkeletonGrid />

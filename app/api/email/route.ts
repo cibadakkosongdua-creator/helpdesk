@@ -4,6 +4,7 @@ import {
   emailNewTicketAdmin,
   emailReplyUser,
   emailStatusChanged,
+  emailGuestConfirmation,
 } from "@/lib/helpdesk/email-service"
 import type { TicketStatus } from "@/lib/helpdesk/firestore-service"
 
@@ -11,7 +12,7 @@ import type { TicketStatus } from "@/lib/helpdesk/firestore-service"
  * Email API Route
  *
  * POST /api/email
- * Body: { type: "new-ticket" | "reply" | "status-change", data: {...} }
+ * Body: { type: "new-ticket" | "reply" | "status-change" | "guest-confirmation", data: {...} }
  */
 export async function POST(req: NextRequest) {
   try {
@@ -59,6 +60,21 @@ export async function POST(req: NextRequest) {
           ...data,
           appUrl: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
         })
+        break
+
+      case "guest-confirmation":
+        if (!data.guestEmail) {
+          return NextResponse.json({ error: "Missing guestEmail" }, { status: 400 })
+        }
+        email = emailGuestConfirmation({
+          guestName: data.guestName,
+          category: data.category,
+          purpose: data.purpose,
+          checkInTime: data.checkInTime,
+          appUrl: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+        })
+        email.to = data.guestEmail
+        console.log("[Email API] Sending guest-confirmation email to:", email.to)
         break
 
       default:
