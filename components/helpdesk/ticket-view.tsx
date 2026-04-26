@@ -654,7 +654,7 @@ function FieldSelect({
       </label>
       <Select.Root value={value} onValueChange={onChange}>
         <Select.Trigger
-          className="w-full flex items-center justify-between bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-white/10 rounded-2xl px-5 py-4 text-sm text-slate-900 dark:text-white transition-all font-medium text-left focus:outline-none focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 data-[state=open]:border-blue-500/50 data-[state=open]:ring-4 data-[state=open]:ring-blue-500/10 hover:bg-slate-100 dark:hover:bg-white/10 active:scale-[0.98]"
+          className="w-full flex items-center justify-between bg-white dark:bg-slate-950 border border-slate-200 dark:border-white/10 rounded-2xl px-5 py-4 text-sm text-slate-900 dark:text-white transition-all duration-200 font-medium text-left focus:outline-none focus:ring-4 focus:ring-blue-500/10 hover:border-blue-500/30 hover:bg-slate-50 dark:hover:bg-white/5 data-[state=open]:border-blue-500/50 data-[state=open]:ring-4 data-[state=open]:ring-blue-500/10 active:scale-[0.99]"
         >
           <Select.Value />
           <Select.Icon>
@@ -666,14 +666,14 @@ function FieldSelect({
           <Select.Content
             position="popper"
             sideOffset={8}
-            className="z-[100] w-[var(--radix-select-trigger-width)] bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-none overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200"
+            className="z-[100] w-[var(--radix-select-trigger-width)] bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl shadow-slate-200/50 dark:shadow-none overflow-hidden animate-in fade-in slide-in-from-top-2 duration-300"
           >
             <Select.Viewport className="p-1.5">
               {options.map((o) => (
                 <Select.Item
                   key={o.value}
                   value={o.value}
-                  className="relative flex items-center w-full px-4 py-3 text-sm text-slate-700 dark:text-slate-300 rounded-xl outline-none transition-colors hover:bg-blue-50 dark:hover:bg-blue-500/10 focus:bg-blue-50 dark:focus:bg-blue-500/10 data-[state=checked]:bg-blue-500 data-[state=checked]:text-white data-[state=checked]:font-bold cursor-pointer select-none"
+                  className="relative flex items-center w-full px-4 py-3 text-sm text-slate-700 dark:text-slate-300 rounded-xl outline-none transition-all duration-200 data-[highlighted]:bg-blue-50 dark:data-[highlighted]:bg-blue-500/10 data-[highlighted]:text-blue-600 dark:data-[highlighted]:text-blue-400 data-[state=checked]:bg-blue-500 data-[state=checked]:text-white data-[state=checked]:font-bold cursor-pointer select-none"
                 >
                   <Select.ItemText>{o.label}</Select.ItemText>
                   <Select.ItemIndicator className="absolute right-4 inline-flex items-center justify-center">
