@@ -549,11 +549,11 @@ export function TicketView({
         </div>
 
         <div className="space-y-3 relative z-10">
-          <div className="flex items-center justify-between gap-2 ml-1">
+            <div className="flex items-center justify-between gap-2 ml-1 flex-wrap">
             <label className="text-xs font-semibold tracking-wide text-slate-700 dark:text-slate-300 uppercase">
               Deskripsi Detail
             </label>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <span className={`text-[10px] font-mono font-bold tabular-nums ${
                 formData.details.length > 450 ? 'text-red-500' : formData.details.length > 200 ? 'text-amber-500' : 'text-slate-400 dark:text-slate-500'
               }`}>

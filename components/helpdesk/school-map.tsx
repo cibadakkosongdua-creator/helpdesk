@@ -127,12 +127,13 @@ export function SchoolMap({
                     y={(room.y + room.h / 2) * GRID_SIZE}
                     textAnchor="middle"
                     dominantBaseline="middle"
-                    className={`text-[9px] font-bold select-none pointer-events-none transition-colors ${
+                    className={`font-bold select-none pointer-events-none transition-colors ${
                       isSelected || room.type === 'mushola' ? 'fill-white' : 'fill-slate-700 dark:fill-slate-900'
                     }`}
+                    fontSize={room.type === "wc" ? "7" : "9"}
                   >
                     {room.label.split(" ").map((word, i, arr) => (
-                      <tspan key={i} x={(room.x + room.w / 2) * GRID_SIZE} dy={i === 0 ? (arr.length === 1 ? 0 : -6) : 12}>
+                      <tspan key={i} x={(room.x + room.w / 2) * GRID_SIZE} dy={i === 0 ? (arr.length === 1 ? 0 : -(arr.length - 1) * 5) : 11}>
                         {word}
                       </tspan>
                     ))}

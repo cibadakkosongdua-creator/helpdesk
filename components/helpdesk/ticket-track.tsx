@@ -142,7 +142,7 @@ export function TicketTrack({ code }: { code: string }) {
                     <ElapsedTime createdAt={ticket.createdAt} />
                   </p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <StatusPill status={ticket.status} />
                   <button
                     onClick={handleShare}
