@@ -322,24 +322,11 @@ function StatusTimeline({
     },
   ]
   const currentIdx = steps.findIndex((s) => s.key === status)
-  const progressPct = status === "Open" ? 25 : status === "In Progress" ? 65 : 100
-  const progressColor = status === "Open" ? "bg-amber-500" : status === "In Progress" ? "bg-blue-500" : "bg-emerald-500"
-
   return (
     <div className="bg-white dark:bg-slate-900/40 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 rounded-[2rem] p-5 md:p-6 shadow-sm">
-      <div className="flex items-center justify-between mb-3">
-        <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-          Progres Penanganan
-        </p>
-        <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">{progressPct}%</span>
-      </div>
-      {/* Progress Bar */}
-      <div className="w-full h-2 bg-slate-100 dark:bg-white/5 rounded-full mb-5 overflow-hidden">
-        <div
-          className={`h-full rounded-full transition-all duration-1000 ease-out ${progressColor}`}
-          style={{ width: `${progressPct}%` }}
-        />
-      </div>
+      <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-5">
+        Progres Penanganan
+      </p>
       <ol className="flex items-start gap-2">
         {steps.map((s, i) => {
           const done = i <= currentIdx
