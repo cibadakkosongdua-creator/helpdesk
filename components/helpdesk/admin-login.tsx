@@ -62,7 +62,7 @@ export function AdminLogin({
           ) : (
             <>
               <GoogleIcon />
-              <span>Sign in with Google</span>
+              <span>Masuk dengan Google</span>
             </>
           )}
         </button>

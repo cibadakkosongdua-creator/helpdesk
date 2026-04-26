@@ -29,7 +29,24 @@ export default function TamuPage() {
 
       <Toast toast={toast} onDismiss={dismissToast} />
 
-      <main className="relative z-10 flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-12 md:py-20 flex flex-col items-center justify-center">
+      {/* Header minimal */}
+      <header className="relative z-10 max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-6 pb-2 flex items-center justify-between">
+        <a
+          href="/"
+          className="inline-flex items-center gap-2 text-sm font-bold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors group"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="group-hover:-translate-x-0.5 transition-transform">
+            <path d="m15 18-6-6 6-6"/>
+          </svg>
+          Kembali ke Beranda
+        </a>
+        <div className="flex items-center gap-2">
+          <img src="/logo.png" alt="Logo" className="w-7 h-7 rounded-full shadow-sm" />
+          <span className="font-black text-sm tracking-tight text-slate-800 dark:text-slate-200 hidden sm:block">SDN 02 Cibadak</span>
+        </div>
+      </header>
+
+      <main className="relative z-10 flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 md:py-16 flex flex-col items-center justify-center">
         <GuestForm showToast={showToast} />
       </main>
 

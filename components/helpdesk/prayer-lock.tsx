@@ -20,17 +20,31 @@ const PRAYER_VERSES: Record<PrayerName, string> = {
   Isya: '"Sesungguhnya orang yang mendirikan sholat malam, mereka yang baik" - QS 17:79',
 }
 
+const PRAYER_GRADIENTS: Record<PrayerName, string> = {
+  Subuh: "from-slate-900 via-indigo-900 to-fuchsia-900", // Fajar
+  Dhuhur: "from-sky-500 via-blue-600 to-indigo-800", // Siang cerah
+  Ashar: "from-amber-600 via-orange-700 to-rose-800", // Sore
+  Maghrib: "from-orange-700 via-red-900 to-slate-900", // Senja
+  Isya: "from-slate-950 via-blue-950 to-slate-900", // Malam gelap
+}
+
 type PrayerLockProps = {
   enabled: boolean
   onDismiss?: () => void
 }
 
 export function PrayerLock({ enabled }: PrayerLockProps) {
-  const [state, setState] = useState<PrayerState>(() => getPrayerState())
+  const [mounted, setMounted] = useState(false)
+  const [state, setState] = useState<PrayerState>({ current: null, next: null, isLocked: false })
   const [showReminder, setShowReminder] = useState(false)
   const [reminderPrayer, setReminderPrayer] = useState<PrayerName | null>(null)
   const [reminderMinutes, setReminderMinutes] = useState(0)
   const [countdown, setCountdown] = useState({ minutes: 0, seconds: 0 })
+
+  useEffect(() => {
+    setMounted(true)
+    setState(getPrayerState())
+  }, [])
 
   // Fetch prayer times from API on mount
   useEffect(() => {
@@ -99,7 +113,7 @@ export function PrayerLock({ enabled }: PrayerLockProps) {
     }
   }, [state.isLocked])
 
-  if (!enabled) return null
+  if (!mounted || !enabled) return null
 
   const prayerTimes = getTodayPrayerTimes()
 
@@ -134,13 +148,13 @@ export function PrayerLock({ enabled }: PrayerLockProps) {
           <div className="flex gap-2">
             <button
               onClick={handleDismiss}
-              className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
+              className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/5 hover:scale-[1.02] active:scale-95 transition-all"
             >
               Tutup
             </button>
             <button
               onClick={handleDismiss}
-              className="flex-1 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold transition-colors"
+              className="flex-1 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold hover:scale-[1.02] active:scale-95 transition-all shadow-sm shadow-amber-500/25"
             >
               Siap Sholat
             </button>
@@ -153,8 +167,10 @@ export function PrayerLock({ enabled }: PrayerLockProps) {
   // Show lock screen during prayer time (mandatory, no skip)
   if (state.isLocked && state.current) {
     const Icon = PRAYER_ICONS[state.current]
+    const gradientClass = PRAYER_GRADIENTS[state.current] || "from-emerald-900 via-teal-900 to-slate-900"
+    
     return (
-      <div className="fixed inset-0 z-[300] flex items-center justify-center bg-gradient-to-br from-emerald-900 via-teal-900 to-slate-900 animate-in fade-in p-4">
+      <div className={`fixed inset-0 z-[300] flex items-center justify-center bg-gradient-to-br ${gradientClass} animate-in fade-in duration-700 p-4`}>
         <div className="max-w-md w-full text-center">
           {/* Lock Icon */}
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-white/10 backdrop-blur-xl flex items-center justify-center">
@@ -227,16 +243,18 @@ export function PrayerLock({ enabled }: PrayerLockProps) {
  * Prayer status badge for navbar
  */
 export function PrayerBadge() {
-  const [state, setState] = useState<PrayerState>(() => getPrayerState())
+  const [mounted, setMounted] = useState(false)
+  const [state, setState] = useState<PrayerState>({ current: null, next: null, isLocked: false })
 
   useEffect(() => {
+    setMounted(true)
     const check = () => setState(getPrayerState())
     check()
     const interval = setInterval(check, 60000)
     return () => clearInterval(interval)
   }, [])
 
-  if (!state.next) return null
+  if (!mounted || !state.next) return null
 
   return (
     <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-[10px] font-medium">

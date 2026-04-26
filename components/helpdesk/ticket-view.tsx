@@ -8,6 +8,7 @@ import {
   Copy,
   ExternalLink,
   Flame,
+  Lock,
   LogIn,
   Plus,
   Search,
@@ -191,6 +192,9 @@ export function TicketView({
         reporterUid: user?.uid,
       })
       setCreated(saved)
+      try {
+        localStorage.setItem("helpdesk_last_ticket", JSON.stringify({ code: saved.code, status: saved.status }))
+      } catch {}
       if (navigator.vibrate) navigator.vibrate([10, 40, 10])
     } catch (err: any) {
       showToast(err?.message || "Gagal mengirim tiket.", "error")
@@ -373,7 +377,7 @@ export function TicketView({
       {myTickets.length > 0 && (
         <div className="mb-8 bg-white dark:bg-slate-900/40 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 rounded-[2rem] p-5 md:p-6 shadow-sm">
           <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">
-            Tiket Anda ({myTickets.length})
+            Tiket Saya ({myTickets.length})
           </p>
           <div className="space-y-2">
             {myTickets.slice(0, 5).map((t) => (
@@ -493,18 +497,26 @@ export function TicketView({
             <label className="text-xs font-semibold tracking-wide text-slate-700 dark:text-slate-300 uppercase">
               Deskripsi Detail
             </label>
-            <VoiceInput
-              onTranscript={(t) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  details: prev.details ? `${prev.details} ${t}` : t,
-                }))
-              }
-            />
+            <div className="flex items-center gap-2">
+              <span className={`text-[10px] font-mono font-bold tabular-nums ${
+                formData.details.length > 450 ? 'text-red-500' : formData.details.length > 200 ? 'text-amber-500' : 'text-slate-400 dark:text-slate-500'
+              }`}>
+                {formData.details.length}/500
+              </span>
+              <VoiceInput
+                onTranscript={(t) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    details: prev.details ? `${prev.details} ${t}` : t,
+                  }))
+                }
+              />
+            </div>
           </div>
           <textarea
             required
             rows={5}
+            maxLength={500}
             placeholder="Jelaskan secara spesifik kendala yang dialami, kapan terjadi, dan apa yang sudah dicoba..."
             value={formData.details}
             onChange={(e) => setFormData({ ...formData, details: e.target.value })}
@@ -620,17 +632,28 @@ function FieldInput({
 }) {
   return (
     <div className="space-y-2">
-      <label className="text-xs font-semibold tracking-wide text-slate-700 dark:text-slate-300 uppercase ml-1">
-        {label}
-      </label>
+      <div className="flex items-center justify-between ml-1">
+        <label className="text-xs font-semibold tracking-wide text-slate-700 dark:text-slate-300 uppercase">
+          {label}
+        </label>
+        {readOnly && (
+          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700">
+            <Lock className="w-2.5 h-2.5" /> Dikunci
+          </span>
+        )}
+      </div>
       <input
         required={required}
-        readOnly={readOnly}
+        disabled={readOnly}
         type="text"
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className={`w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-white/10 rounded-2xl px-5 py-4 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all font-medium ${readOnly ? "cursor-not-allowed opacity-70" : ""}`}
+        className={`w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-white/10 rounded-2xl px-5 py-4 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all font-medium ${
+          readOnly
+            ? "cursor-not-allowed opacity-70 bg-slate-100 dark:bg-slate-800/60 border-slate-200 dark:border-white/5 select-none"
+            : "focus:bg-white dark:focus:bg-slate-900"
+        }`}
       />
     </div>
   )

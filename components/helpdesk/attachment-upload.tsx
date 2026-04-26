@@ -1,6 +1,6 @@
 "use client"
 
-import { ExternalLink, FileText, Image as ImageIcon, Link2, Paperclip, Plus, Trash2, UploadCloud, X } from "lucide-react"
+import { ExternalLink, FileText, Link2, Paperclip, Plus, Trash2, UploadCloud, X, ZoomIn } from "lucide-react"
 import { useRef, useState } from "react"
 import { DRIVE_FOLDER_URL, normalizeDriveLink } from "@/lib/helpdesk/drive-upload"
 import type { Attachment } from "@/lib/helpdesk/firestore-service"
@@ -26,6 +26,7 @@ export function AttachmentUpload({
   const inputRef = useRef<HTMLInputElement>(null)
   const [linkInput, setLinkInput] = useState("")
   const [linkName, setLinkName] = useState("")
+  const [lightbox, setLightbox] = useState<{ src: string; name: string } | null>(null)
 
   const handleSelectFile = (file: File) => {
     if (file.size > 10 * 1024 * 1024) {
@@ -92,9 +93,13 @@ export function AttachmentUpload({
                 className="bg-blue-50/60 dark:bg-blue-500/5 border border-blue-200/60 dark:border-blue-500/20 rounded-2xl overflow-hidden"
               >
                 {item.data.preview ? (
-                  <div className="relative group">
+                  <div className="relative group cursor-zoom-in" onClick={() => setLightbox({ src: item.data.preview!, name: item.data.file.name })}>
                     <div className="w-full aspect-video max-h-48 bg-slate-100 dark:bg-slate-800 overflow-hidden">
                       <img src={item.data.preview} alt={item.data.file.name} className="w-full h-full object-contain" />
+                    </div>
+                    {/* Zoom overlay */}
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/20 transition-colors">
+                      <ZoomIn className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow" />
                     </div>
                     <button
                       type="button"
@@ -184,7 +189,7 @@ export function AttachmentUpload({
         <button
           type="button"
           onClick={() => inputRef.current?.click()}
-          className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-blue-50 dark:bg-blue-500/10 border border-dashed border-blue-300 dark:border-blue-500/30 text-blue-700 dark:text-blue-300 text-sm font-bold hover:bg-blue-100 dark:hover:bg-blue-500/20 transition-colors"
+          className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-blue-50 dark:bg-blue-500/10 border border-dashed border-blue-300 dark:border-blue-500/30 text-blue-700 dark:text-blue-300 text-sm font-bold hover:bg-blue-100 dark:hover:bg-blue-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
         >
           <UploadCloud className="w-4 h-4" />
           Pilih File
@@ -193,7 +198,7 @@ export function AttachmentUpload({
           href={DRIVE_FOLDER_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-200 text-sm font-bold hover:bg-slate-200 dark:hover:bg-white/10 transition-colors"
+          className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-200 text-sm font-bold hover:bg-slate-200 dark:hover:bg-white/10 hover:scale-[1.02] active:scale-[0.98] transition-all"
         >
           <ExternalLink className="w-4 h-4" />
           Folder Drive Sekolah
@@ -213,14 +218,14 @@ export function AttachmentUpload({
             placeholder="Nama file (opsional)"
             value={linkName}
             onChange={(e) => setLinkName(e.target.value)}
-            className="sm:w-44 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all"
+            className="sm:w-44 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all font-medium"
           />
           <input
             type="url"
             placeholder="https://drive.google.com/file/d/..."
             value={linkInput}
             onChange={(e) => setLinkInput(e.target.value)}
-            className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all"
+            className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all font-medium"
           />
           <button
             type="button"
@@ -232,6 +237,25 @@ export function AttachmentUpload({
           </button>
         </div>
       </div>
+
+      {/* Lightbox */}
+      {lightbox && (
+        <div
+          className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-200 p-4"
+          onClick={() => setLightbox(null)}
+        >
+          <div className="relative max-w-3xl w-full animate-in zoom-in-95 duration-300" onClick={(e) => e.stopPropagation()}>
+            <img src={lightbox.src} alt={lightbox.name} className="w-full max-h-[80vh] object-contain rounded-2xl shadow-2xl" />
+            <p className="text-white/70 text-xs text-center mt-3 font-medium">{lightbox.name}</p>
+            <button
+              onClick={() => setLightbox(null)}
+              className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-white text-slate-900 flex items-center justify-center shadow-lg hover:scale-110 active:scale-95 transition-transform"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -4,10 +4,14 @@ import {
   ArrowLeft,
   CheckCircle2,
   Clock,
+  Copy,
+  Check,
   ExternalLink,
   FileText,
   Loader2,
+  Lock,
   Search,
+  Share2,
   Star,
   Ticket as TicketIcon,
 } from "lucide-react"
@@ -28,6 +32,15 @@ export function TicketTrack({ code }: { code: string }) {
   const [ticket, setTicket] = useState<Ticket | null>(null)
   const [loading, setLoading] = useState(true)
   const [reporterName, setReporterName] = useState("")
+  const [copied, setCopied] = useState(false)
+
+  const handleShare = () => {
+    const url = typeof window !== "undefined" ? window.location.href : ""
+    navigator.clipboard.writeText(url).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }).catch(() => {})
+  }
 
   useEffect(() => {
     setLoading(true)
@@ -120,7 +133,21 @@ export function TicketTrack({ code }: { code: string }) {
                     Dibuat {new Date(ticket.createdAt).toLocaleString("id-ID")}
                   </p>
                 </div>
-                <StatusPill status={ticket.status} />
+                <div className="flex items-center gap-2">
+                  <StatusPill status={ticket.status} />
+                  <button
+                    onClick={handleShare}
+                    title="Salin link tiket"
+                    className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all hover:scale-105 active:scale-95 ${
+                      copied
+                        ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-500/20"
+                        : "bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 border border-slate-200/60 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10"
+                    }`}
+                  >
+                    {copied ? <Check className="w-3.5 h-3.5" /> : <Share2 className="w-3.5 h-3.5" />}
+                    {copied ? "Tersalin!" : "Bagikan"}
+                  </button>
+                </div>
               </div>
 
               <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -178,15 +205,19 @@ export function TicketTrack({ code }: { code: string }) {
             {/* Reply thread */}
             <section className="bg-white dark:bg-slate-900/40 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 rounded-[2rem] p-5 md:p-6 shadow-sm">
               <div className="mb-3">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  Nama Anda (pelapor)
-                </label>
+                <div className="flex items-center justify-between w-full md:w-1/2 mb-1">
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 ml-1">
+                    Nama Anda (pelapor)
+                  </label>
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700">
+                    <Lock className="w-2.5 h-2.5" /> Dikunci
+                  </span>
+                </div>
                 <input
                   type="text"
-                  placeholder={ticket.name || "Nama Anda"}
-                  value={reporterName}
-                  onChange={(e) => setReporterName(e.target.value)}
-                  className="mt-1 w-full md:w-1/2 bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                  disabled
+                  value={ticket.name}
+                  className="w-full md:w-1/2 cursor-not-allowed opacity-70 bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-white/5 rounded-2xl px-4 py-3 text-sm text-slate-900 dark:text-white select-none transition-all font-medium"
                 />
               </div>
               <ReplyThread
@@ -255,51 +286,79 @@ function StatusTimeline({
   status: TicketStatus
   createdAt: number
 }) {
-  const steps: { key: TicketStatus; label: string }[] = [
-    { key: "Open", label: "Tiket diterima" },
-    { key: "In Progress", label: "Sedang diproses" },
-    { key: "Resolved", label: "Terselesaikan" },
+  const steps: { key: TicketStatus; label: string; color: string; ringColor: string; bgDone: string; bgPending: string }[] = [
+    {
+      key: "Open",
+      label: "Tiket Diterima",
+      color: "text-amber-600 dark:text-amber-400",
+      ringColor: "border-amber-400 dark:border-amber-500",
+      bgDone: "bg-amber-500 border-amber-500 text-white",
+      bgPending: "bg-white dark:bg-slate-900 border-slate-200 dark:border-white/10 text-slate-400",
+    },
+    {
+      key: "In Progress",
+      label: "Sedang Diproses",
+      color: "text-blue-600 dark:text-blue-400",
+      ringColor: "border-blue-400 dark:border-blue-500",
+      bgDone: "bg-blue-600 border-blue-600 text-white",
+      bgPending: "bg-white dark:bg-slate-900 border-slate-200 dark:border-white/10 text-slate-400",
+    },
+    {
+      key: "Resolved",
+      label: "Terselesaikan",
+      color: "text-emerald-600 dark:text-emerald-400",
+      ringColor: "border-emerald-400 dark:border-emerald-500",
+      bgDone: "bg-emerald-500 border-emerald-500 text-white",
+      bgPending: "bg-white dark:bg-slate-900 border-slate-200 dark:border-white/10 text-slate-400",
+    },
   ]
   const currentIdx = steps.findIndex((s) => s.key === status)
   return (
     <div className="bg-white dark:bg-slate-900/40 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 rounded-[2rem] p-5 md:p-6 shadow-sm">
-      <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-4">
+      <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-5">
         Progres Penanganan
       </p>
       <ol className="flex items-start gap-2">
         {steps.map((s, i) => {
           const done = i <= currentIdx
+          const isActive = i === currentIdx
           return (
             <li key={s.key} className="flex-1 flex flex-col items-center text-center gap-2">
               <div className="w-full flex items-center gap-2">
                 {i > 0 && (
                   <span
-                    className={`flex-1 h-[2px] rounded-full ${
-                      done ? "bg-emerald-500" : "bg-slate-200 dark:bg-white/10"
+                    className={`flex-1 h-[2px] rounded-full transition-all duration-700 ${
+                      done ? (i <= currentIdx ? steps[i - 1].bgDone.includes("emerald") ? "bg-emerald-500" : steps[i - 1].bgDone.includes("blue") ? "bg-blue-500" : "bg-amber-500" : "bg-emerald-500") : "bg-slate-200 dark:bg-white/10"
                     }`}
                   />
                 )}
                 <div
-                  className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 border-2 ${
-                    done
-                      ? "bg-emerald-500 border-emerald-500 text-white"
-                      : "bg-white dark:bg-slate-900 border-slate-200 dark:border-white/10 text-slate-400"
-                  }`}
+                  className={`relative w-9 h-9 rounded-full flex items-center justify-center shrink-0 border-2 transition-all duration-500 ${
+                    done ? s.bgDone : s.bgPending
+                  } ${isActive ? "ring-4 ring-offset-2 ring-offset-white dark:ring-offset-slate-900 " + s.ringColor : ""}`}
                 >
-                  {done ? <CheckCircle2 className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
+                  {done ? (
+                    <CheckCircle2 className={`w-4 h-4 ${isActive ? "animate-bounce-short" : ""}`} />
+                  ) : (
+                    <Clock className="w-4 h-4" />
+                  )}
+                  {/* Animated pulse ring for active step */}
+                  {isActive && (
+                    <span className="absolute inset-0 rounded-full animate-ping opacity-30 bg-current" />
+                  )}
                 </div>
                 {i < steps.length - 1 && (
                   <span
-                    className={`flex-1 h-[2px] rounded-full ${
-                      i < currentIdx ? "bg-emerald-500" : "bg-slate-200 dark:bg-white/10"
+                    className={`flex-1 h-[2px] rounded-full transition-all duration-700 ${
+                      i < currentIdx ? (s.bgDone.includes("emerald") ? "bg-emerald-500" : s.bgDone.includes("blue") ? "bg-blue-500" : "bg-amber-500") : "bg-slate-200 dark:bg-white/10"
                     }`}
                   />
                 )}
               </div>
               <div>
                 <p
-                  className={`text-xs font-bold ${
-                    done ? "text-slate-900 dark:text-white" : "text-slate-400"
+                  className={`text-xs font-bold transition-colors ${
+                    done ? s.color : "text-slate-400"
                   }`}
                 >
                   {s.label}

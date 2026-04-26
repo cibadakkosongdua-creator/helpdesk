@@ -71,7 +71,7 @@ export function EmojiPicker({
       </button>
 
       {open && (
-        <div className="absolute bottom-full left-0 mb-1 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl shadow-xl z-50 animate-in fade-in slide-in-from-bottom-2 duration-200">
+        <div className="absolute bottom-full left-0 mb-1 w-52 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl shadow-xl z-50 animate-in fade-in slide-in-from-bottom-2 duration-200 overflow-hidden">
           <div className="p-2 grid grid-cols-6 gap-1">
             {COMMON_EMOJIS.map((emoji) => (
               <button

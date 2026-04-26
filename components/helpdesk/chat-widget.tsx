@@ -243,7 +243,7 @@ export function ChatWidget() {
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder="Ask me anything..."
+                  placeholder="Tanyakan sesuatu..."
                   className="flex-1 bg-transparent px-4 md:px-5 py-2 md:py-2.5 text-xs md:text-sm text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none"
                 />
                 <button
@@ -267,8 +267,8 @@ export function ChatWidget() {
               <Bot className="w-5 h-5 animate-pulse" />
             </div>
             <div>
-              <p className="text-sm font-black text-slate-900 dark:text-white leading-none mb-1">Neural Assistant</p>
-              <p className="text-xs text-slate-500 font-medium">I'm ready to help you.</p>
+              <p className="text-sm font-black text-slate-900 dark:text-white leading-none mb-1">Asisten Pintar</p>
+              <p className="text-xs text-slate-500 font-medium">Siap membantu Anda! 👋</p>
             </div>
             <button
               onClick={() => {

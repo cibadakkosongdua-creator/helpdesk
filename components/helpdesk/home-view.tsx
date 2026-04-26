@@ -2,6 +2,7 @@
 
 import {
   AlertCircle,
+  CheckCircle2,
   ChevronDown,
   ChevronRight,
   Clock,
@@ -81,11 +82,20 @@ export function HomeView({
   const [aiFinding, setAiFinding] = useState(false)
   const [aiResult, setAiResult] = useState<
     | (Service & { explanation: string })
-    | { notFound: true; explanation: string }
+    | { notFound: true; explanation: string; suggestedFaqs?: FaqItem[] }
     | null
   >(null)
   const [redirecting, setRedirecting] = useState<Service | null>(null)
   const clearRedirect = useCallback(() => setRedirecting(null), [])
+  const [lastTicket, setLastTicket] = useState<{ code: string; status: string } | null>(null)
+
+  // Load last ticket from localStorage
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("helpdesk_last_ticket")
+      if (stored) setLastTicket(JSON.parse(stored))
+    } catch {}
+  }, [user?.uid])
 
   // Jika user balik via Back (bfcache restore), tutup overlay jika ada
   useEffect(() => {
@@ -158,6 +168,14 @@ export function HomeView({
     }
   }
 
+  // Sort: online → maintenance → offline
+  const sortedServices = [...displayServices].sort((a, b) => {
+    const order: Record<string, number> = { online: 0, maintenance: 1, offline: 2 }
+    const sa = effectiveStatus[a.id] ?? 'online'
+    const sb = effectiveStatus[b.id] ?? 'online'
+    return (order[sa] ?? 0) - (order[sb] ?? 0)
+  })
+
   const dismissAnnouncement = () => {
     setAnnouncementDismissed(true)
     try {
@@ -179,11 +197,18 @@ export function HomeView({
       if (svc) {
         setAiResult({ ...svc, explanation })
       } else {
+        const keywords = searchQuery.toLowerCase().split(/\s+/)
+        const suggestions = faqItems.filter((faq) => {
+          const content = `${faq.question} ${faq.answer}`.toLowerCase()
+          return keywords.some((kw) => kw.length > 3 && content.includes(kw))
+        }).slice(0, 2)
+
         setAiResult({
           notFound: true,
           explanation:
             explanation ||
             "Saya belum menemukan layanan yang cocok. Silakan buat tiket kendala agar tim kami membantu langsung.",
+          suggestedFaqs: suggestions.length > 0 ? suggestions : undefined,
         })
       }
     } catch (err) {
@@ -238,26 +263,25 @@ export function HomeView({
       {/* Hero */}
       <section className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
         <div className="space-y-4">
-          {/* Dynamic Greeting */}
-          {user && (
-            <p className="text-lg md:text-xl font-semibold text-slate-700 dark:text-slate-300 animate-in fade-in slide-in-from-left-4 duration-500">
-              {getGreeting(user.name)}
-            </p>
-          )}
+          {/* Greeting — selalu tampil, nama hanya jika login */}
+          <p className="text-lg md:text-xl font-semibold text-slate-700 dark:text-slate-300 animate-in fade-in slide-in-from-left-4 duration-500">
+            {getGreeting(user?.name ?? undefined)}
+          </p>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-500/10 border border-blue-200/60 dark:border-blue-500/20 text-blue-600 dark:text-blue-400 text-xs font-semibold tracking-wide uppercase">
             <Sparkles className="w-3.5 h-3.5" />
             <span>Sistem Terpadu &middot; v2.0</span>
           </div>
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.05] text-balance">
-            Ekosistem Digital <br className="hidden md:block" />
-            <span className="text-slate-400 dark:text-slate-500">SDN 02 Cibadak.</span>
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.05] text-balance">
+            <span className="text-slate-900 dark:text-white">Ekosistem Digital </span>
+            <br className="hidden md:block" />
+            <span className="bg-gradient-to-r from-blue-600 via-indigo-500 to-violet-500 dark:from-blue-400 dark:via-indigo-400 dark:to-violet-400 bg-clip-text text-transparent">SDN 02 Cibadak.</span>
           </h1>
           <p className="text-slate-500 dark:text-slate-400 text-base md:text-lg max-w-xl leading-relaxed text-pretty">
             Akses seluruh portal layanan informasi, administrasi, dan pembelajaran dalam satu pusat kontrol cerdas.
           </p>
         </div>
 
-        <div className="flex flex-col gap-3 w-fit">
+        <div className="flex flex-col gap-3 w-full md:w-fit">
           <div className="flex items-center gap-3 bg-white/60 dark:bg-slate-900/50 backdrop-blur-md px-5 py-3 rounded-2xl border border-slate-200/60 dark:border-white/10 shadow-sm">
             <div className="relative flex h-3 w-3">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
@@ -265,7 +289,7 @@ export function HomeView({
             </div>
             <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">{displayServices.length} Layanan Aktif</span>
           </div>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-3 gap-2 w-full md:w-auto">
             <KpiCard
               value={animTickets}
               empty={settingsLoaded && !publicTickets}
@@ -289,6 +313,38 @@ export function HomeView({
           </div>
         </div>
       </section>
+
+      {/* Last Ticket Widget — hanya muncul jika ada tiket terakhir di localStorage */}
+      {lastTicket && (
+        <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+          <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-white/60 dark:bg-slate-900/40 backdrop-blur-md border border-slate-200/60 dark:border-white/10 shadow-sm">
+            <div className="w-8 h-8 rounded-xl bg-blue-100 dark:bg-blue-500/15 flex items-center justify-center shrink-0">
+              <TicketIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Tiket Terakhir Saya</p>
+              <p className="text-sm font-bold text-slate-900 dark:text-white font-mono">{lastTicket.code}</p>
+            </div>
+            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border ${
+              lastTicket.status === "Resolved"
+                ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-200/60 dark:border-emerald-500/20"
+                : lastTicket.status === "In Progress"
+                ? "bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-200/60 dark:border-blue-500/20"
+                : "bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-200/60 dark:border-amber-500/20"
+            }`}>
+              {lastTicket.status === "Resolved" ? <CheckCircle2 className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
+              {lastTicket.status}
+            </span>
+            <a
+              href={`/tiket/${lastTicket.code}`}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-bold hover:scale-105 active:scale-95 transition-all shrink-0"
+            >
+              <ChevronRight className="w-3.5 h-3.5" />
+              Lacak
+            </a>
+          </div>
+        </div>
+      )}
 
       {/* AI Smart Search */}
       <form onSubmit={handleFindService} className="relative group z-20">
@@ -320,12 +376,43 @@ export function HomeView({
       {aiResult && (
         <div className="animate-in fade-in slide-in-from-top-4 duration-500 -mt-6">
           {"notFound" in aiResult ? (
-            <div className="bg-amber-50 dark:bg-amber-500/10 border border-amber-200/60 dark:border-amber-500/20 rounded-2xl p-5 flex items-start gap-3">
-              <AlertCircle className="w-6 h-6 text-amber-500 shrink-0 mt-0.5" />
-              <div>
-                <h4 className="font-bold text-amber-900 dark:text-amber-300">Layanan Tidak Ditemukan</h4>
-                <p className="text-amber-800 dark:text-amber-200 mt-1 text-sm">{aiResult.explanation}</p>
+            <div className="space-y-4">
+              <div className="bg-amber-50 dark:bg-amber-500/10 border border-amber-200/60 dark:border-amber-500/20 rounded-2xl p-5 flex items-start gap-3">
+                <AlertCircle className="w-6 h-6 text-amber-500 shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="font-bold text-amber-900 dark:text-amber-300">Layanan Tidak Ditemukan</h4>
+                  <p className="text-sm text-amber-700 dark:text-amber-400 mt-1 leading-relaxed">
+                    {aiResult.explanation}
+                  </p>
+                  <button
+                    onClick={() => {
+                      setAiResult(null)
+                      setView("ticket")
+                    }}
+                    className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-500 text-white text-xs font-bold hover:bg-amber-600 hover:scale-[1.02] active:scale-95 transition-all shadow-sm shadow-amber-500/20"
+                  >
+                    Buat Tiket Baru <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
+
+              {/* Inline FAQ Suggestions */}
+              {aiResult.suggestedFaqs && aiResult.suggestedFaqs.length > 0 && (
+                <div className="bg-white/60 dark:bg-slate-900/40 border border-slate-200/60 dark:border-white/10 rounded-2xl p-5 shadow-sm">
+                  <h4 className="font-bold text-sm text-slate-800 dark:text-slate-200 mb-3 flex items-center gap-2">
+                    <SearchIcon className="w-4 h-4 text-blue-500" />
+                    Mungkin Ini Yang Anda Cari?
+                  </h4>
+                  <div className="space-y-3">
+                    {aiResult.suggestedFaqs.map((faq) => (
+                      <div key={faq.id} className="p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5">
+                        <p className="font-semibold text-sm text-slate-900 dark:text-white">{faq.question}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed">{faq.answer}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <div className="bg-gradient-to-br from-blue-50/80 to-indigo-50/80 dark:from-blue-900/20 dark:to-indigo-900/20 backdrop-blur-md border border-blue-200/60 dark:border-blue-500/20 rounded-2xl p-1 shadow-lg dark:shadow-[0_0_30px_-5px_rgba(59,130,246,0.3)]">
@@ -455,9 +542,7 @@ export function HomeView({
                 className="bg-white dark:bg-slate-900/40 border border-slate-200/80 dark:border-white/5 rounded-[2rem] p-6 relative overflow-hidden min-h-[200px] flex flex-col justify-between"
                 style={{ animationDelay: `${i * 100}ms` }}
               >
-                {/* Shimmer sweep — smoother with both keyframe positions */}
                 <div className="absolute inset-0 animate-[shimmer_1.8s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-slate-100/80 dark:via-white/[0.06] to-transparent" />
-                {/* Skeleton blocks */}
                 <div className="flex justify-between items-start relative z-10">
                   <div className="w-12 h-12 bg-slate-200/80 dark:bg-white/10 rounded-2xl animate-pulse" />
                   <div className="h-5 w-20 bg-slate-200/80 dark:bg-white/10 rounded-full animate-pulse" />
@@ -469,7 +554,7 @@ export function HomeView({
                 </div>
               </div>
             ))
-          ) : displayServices.map((service, index) => {
+          ) : sortedServices.map((service, index) => {
             const status: ServiceStatus = effectiveStatus[service.id] ?? "online"
             const statusConfig: Record<ServiceStatus, { label: string; dotClass: string; bgClass: string; textClass: string; glowClass: string }> = {
               online: {

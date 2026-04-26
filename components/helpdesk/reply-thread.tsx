@@ -288,7 +288,7 @@ export function ReplyThread({
                   setText(qr)
                   handleTyping()
                 }}
-                className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 text-xs font-medium hover:bg-slate-200 dark:hover:bg-white/10 transition-colors"
+                className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 text-xs font-medium hover:bg-slate-200 dark:hover:bg-white/10 hover:scale-105 active:scale-95 transition-all"
               >
                 {qr}
               </button>
@@ -301,7 +301,7 @@ export function ReplyThread({
                 type="button"
                 onClick={handleSuggest}
                 disabled={aiLoading}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-300 text-xs font-bold hover:bg-blue-100 dark:hover:bg-blue-500/20 transition-colors disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-blue-500/10 to-indigo-500/10 hover:from-blue-500/20 hover:to-indigo-500/20 border border-blue-500/20 dark:border-blue-400/20 text-blue-700 dark:text-blue-300 text-xs font-bold transition-all disabled:opacity-50"
               >
                 {aiLoading ? (
                   <span className="w-3 h-3 border-2 border-blue-500/30 border-t-blue-700 dark:border-t-blue-300 rounded-full animate-spin" />

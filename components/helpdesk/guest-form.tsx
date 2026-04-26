@@ -21,6 +21,14 @@ export function GuestForm({ showToast, onSuccess }: { showToast: ShowToastFn; on
     phone: "",
   })
 
+// Static map — Tailwind JIT HANYA bundle class yang tertulis literal
+// Dynamic interpolation (bg-${color}-50) TIDAK akan di-bundle di production!
+const CAT_ACTIVE_STYLES: Record<string, string> = {
+  Umum: "bg-blue-50 dark:bg-blue-500/10 border-blue-500 text-blue-600 dark:text-blue-400 shadow-md scale-105",
+  "Orang Tua": "bg-green-50 dark:bg-green-500/10 border-green-500 text-green-600 dark:text-green-400 shadow-md scale-105",
+  Dinas: "bg-purple-50 dark:bg-purple-500/10 border-purple-500 text-purple-600 dark:text-purple-400 shadow-md scale-105",
+}
+
   // Get color theme based on category
   const getThemeColor = () => {
     switch (formData.category) {
@@ -35,7 +43,8 @@ export function GuestForm({ showToast, onSuccess }: { showToast: ShowToastFn; on
           aura: 'via-green-500/20',
           focusBorder: 'focus-within:border-green-500/50',
           focusIcon: 'group-focus-within:text-green-500',
-          labelFocus: 'peer-focus:text-green-500'
+          labelFocus: 'peer-focus:text-green-500',
+          shadow: 'shadow-green-500/30',
         };
       case 'Dinas': 
         return { 
@@ -48,7 +57,8 @@ export function GuestForm({ showToast, onSuccess }: { showToast: ShowToastFn; on
           aura: 'via-purple-500/20',
           focusBorder: 'focus-within:border-purple-500/50',
           focusIcon: 'group-focus-within:text-purple-500',
-          labelFocus: 'peer-focus:text-purple-500'
+          labelFocus: 'peer-focus:text-purple-500',
+          shadow: 'shadow-purple-500/30',
         };
       default: 
         return { 
@@ -61,7 +71,8 @@ export function GuestForm({ showToast, onSuccess }: { showToast: ShowToastFn; on
           aura: 'via-blue-500/20',
           focusBorder: 'focus-within:border-blue-500/50',
           focusIcon: 'group-focus-within:text-blue-500',
-          labelFocus: 'peer-focus:text-blue-500'
+          labelFocus: 'peer-focus:text-blue-500',
+          shadow: 'shadow-blue-500/30',
         };
     }
   }
@@ -304,7 +315,7 @@ export function GuestForm({ showToast, onSuccess }: { showToast: ShowToastFn; on
                 onClick={() => setFormData({ ...formData, category: cat.id as any })}
                 className={`flex flex-col items-center justify-center p-3 rounded-2xl border-2 transition-all duration-300 gap-2 relative overflow-hidden group ${
                   formData.category === cat.id
-                    ? `bg-${cat.color}-50 dark:bg-${cat.color}-500/10 border-${cat.color}-500 text-${cat.color}-600 dark:text-${cat.color}-400 shadow-md scale-105`
+                    ? CAT_ACTIVE_STYLES[cat.id]
                     : 'bg-white dark:bg-white/5 border-slate-100 dark:border-white/5 text-slate-500 hover:border-slate-200 dark:hover:border-white/10 hover:scale-[1.02]'
                 }`}
               >
@@ -489,7 +500,7 @@ export function GuestForm({ showToast, onSuccess }: { showToast: ShowToastFn; on
           disabled={loading}
           className={`w-full py-4 rounded-2xl text-white font-bold text-lg transition-all duration-300 transform active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-3 group relative overflow-hidden shadow-lg ${
             theme.bg
-          } ${theme.ring.replace('ring-', 'shadow-')}`}
+          } ${theme.shadow}`}
         >
           {loading ? (
             <>

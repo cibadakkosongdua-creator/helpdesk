@@ -22,15 +22,13 @@ export function VoiceInput({
 
   useEffect(() => {
     if (typeof window === "undefined") return
-    const SR =
-      (window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition
+    const SR = (window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition
     setSupported(Boolean(SR))
   }, [])
 
   const start = () => {
     if (typeof window === "undefined") return
-    const SR =
-      (window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition
+    const SR = (window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition
     if (!SR) return
     try {
       const rec = new SR()
@@ -39,9 +37,7 @@ export function VoiceInput({
       rec.continuous = false
       rec.onresult = (ev: any) => {
         let transcript = ""
-        for (let i = 0; i < ev.results.length; i++) {
-          transcript += ev.results[i][0].transcript
-        }
+        for (let i = 0; i < ev.results.length; i++) transcript += ev.results[i][0].transcript
         if (transcript) onTranscript(transcript.trim())
       }
       rec.onend = () => setListening(false)
@@ -56,11 +52,7 @@ export function VoiceInput({
   }
 
   const stop = () => {
-    try {
-      recRef.current?.stop()
-    } catch {
-      /* ignore */
-    }
+    try { recRef.current?.stop() } catch {}
     setListening(false)
   }
 
@@ -71,15 +63,32 @@ export function VoiceInput({
       type="button"
       onClick={listening ? stop : start}
       className={`inline-flex items-center justify-center transition-all ${
-        compact && !listening ? "p-2" : "gap-1.5 px-3 py-1.5"
-      } rounded-lg text-xs font-bold ${
+        compact && !listening ? "p-2" : "gap-2 px-3 py-1.5"
+      } rounded-xl text-xs font-bold ${
         listening
-          ? "bg-red-500/90 text-white animate-pulse"
-          : "bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-white/10"
+          ? "bg-red-500/90 text-white shadow-sm shadow-red-500/30"
+          : "bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-white/10 hover:scale-105 active:scale-95"
       }`}
       aria-label={listening ? "Hentikan rekaman suara" : "Mulai rekaman suara"}
     >
-      {listening ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
+      {listening ? (
+        /* Waveform bars animation */
+        <span className="flex items-end gap-[3px] h-4">
+          {[10, 16, 8, 14, 10].map((h, i) => (
+            <span
+              key={i}
+              className="block w-[3px] bg-white rounded-full"
+              style={{
+                height: `${h}px`,
+                animation: `waveform-bar 0.7s ease-in-out infinite`,
+                animationDelay: `${i * 0.12}s`,
+              }}
+            />
+          ))}
+        </span>
+      ) : (
+        <Mic className="w-3.5 h-3.5" />
+      )}
       {(!compact || listening) && (listening ? "Berhenti" : "Rekam Suara")}
     </button>
   )

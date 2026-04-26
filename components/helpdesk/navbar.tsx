@@ -112,8 +112,8 @@ export function Navbar({
 
         {/* Nav links */}
         <DesktopNavButton view="/" current={currentView} set={setView} icon={Home} label="Home" scrolled={scrolled} iconColor="text-blue-500" />
-        <DesktopNavButton view="/lapor" current={currentView} set={setView} icon={Ticket} label="Lapor" scrolled={scrolled} iconColor="text-slate-900 dark:text-white" />
-        <DesktopNavButton view="/survei" current={currentView} set={setView} icon={ClipboardCheck} label="Survei" scrolled={scrolled} iconColor="text-slate-900 dark:text-white" />
+        <DesktopNavButton view="/lapor" current={currentView} set={setView} icon={Ticket} label="Lapor" scrolled={scrolled} iconColor="text-violet-500" />
+        <DesktopNavButton view="/survei" current={currentView} set={setView} icon={ClipboardCheck} label="Survei" scrolled={scrolled} iconColor="text-amber-500" />
         {isAdmin && (
           <div className="relative">
             <DesktopNavButton
@@ -123,7 +123,7 @@ export function Navbar({
               icon={LayoutDashboard}
               label="Admin"
               scrolled={scrolled}
-              iconColor="text-slate-900 dark:text-white"
+              iconColor="text-indigo-500"
             />
             {unreadCount > 0 && (
               <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center px-1 text-[10px] font-bold bg-red-500 text-white rounded-full shadow-lg shadow-red-500/40 animate-in zoom-in duration-300">
@@ -251,8 +251,8 @@ export function Navbar({
       <nav className="md:hidden fixed bottom-4 left-3 right-3 z-50">
         <div className="bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl border border-slate-200/60 dark:border-white/10 rounded-3xl px-4 py-2 shadow-2xl flex items-center justify-around">
           <MobileNavButton view="/" current={currentView} set={setView} icon={Home} label="Home" iconColor="text-blue-500" />
-          <MobileNavButton view="/lapor" current={currentView} set={setView} icon={Ticket} label="Lapor" iconColor="text-slate-900 dark:text-white" />
-          <MobileNavButton view="/survei" current={currentView} set={setView} icon={ClipboardCheck} label="Survei" iconColor="text-slate-900 dark:text-white" />
+          <MobileNavButton view="/lapor" current={currentView} set={setView} icon={Ticket} label="Lapor" iconColor="text-violet-500" />
+          <MobileNavButton view="/survei" current={currentView} set={setView} icon={ClipboardCheck} label="Survei" iconColor="text-amber-500" />
           {isAdmin && (
             <div className="relative">
               <MobileNavButton
@@ -261,7 +261,7 @@ export function Navbar({
                 set={setView}
                 icon={LayoutDashboard}
                 label="Admin"
-                iconColor="text-slate-900 dark:text-white"
+                iconColor="text-indigo-500"
               />
               {unreadCount > 0 && (
                 <span className="absolute -top-1 right-1 min-w-[16px] h-[16px] flex items-center justify-center px-0.5 text-[9px] font-bold bg-red-500 text-white rounded-full shadow-lg shadow-red-500/40 animate-in zoom-in duration-300">

@@ -184,10 +184,10 @@ export function SurveyView({ showToast, user }: { showToast: ShowToastFn; user: 
               type="button"
               onClick={handleAIPolish}
               disabled={aiLoading}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-100/60 dark:bg-amber-500/10 hover:bg-amber-200/60 dark:hover:bg-amber-500/20 text-amber-700 dark:text-amber-400 text-xs font-bold transition-all disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/10 to-orange-500/10 hover:from-amber-500/20 hover:to-orange-500/20 border border-amber-500/20 dark:border-amber-400/20 text-amber-700 dark:text-amber-300 text-xs font-bold transition-all disabled:opacity-50"
             >
               {aiLoading ? (
-                <span className="w-3 h-3 border-2 border-amber-500/30 border-t-amber-700 dark:border-t-amber-400 rounded-full animate-spin" />
+                <span className="w-3 h-3 border-2 border-amber-500/30 border-t-amber-700 dark:border-t-amber-300 rounded-full animate-spin" />
               ) : (
                 <Sparkles className="w-3 h-3" />
               )}
