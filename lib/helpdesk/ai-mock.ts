@@ -3,7 +3,7 @@ import { SERVICES } from "./data"
 const KEYWORDS: Record<string, string[]> = {
   perpus: ["buku", "baca", "perpustakaan", "pinjam", "e-book", "ebook", "novel", "bacaan", "literasi"],
   warga: ["warga", "direktori", "daftar guru", "daftar siswa", "profil sekolah"],
-  ops: ["ops", "operasional", "surat", "administrasi", "jadwal", "dinas"],
+  ops: ["ops", "operator", "pantau", "data", "sistem", "web pribadi"],
   spmb: ["daftar", "pendaftaran", "murid baru", "siswa baru", "spmb", "penerimaan", "masuk sekolah"],
   presensi: ["absen", "absensi", "kehadiran", "presensi", "tidak masuk", "izin"],
   siswa: ["portal siswa", "rapor", "nilai", "tugas", "pr", "password", "login siswa", "nisn"],

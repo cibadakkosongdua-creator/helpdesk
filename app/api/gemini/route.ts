@@ -29,7 +29,7 @@ const SERVICES_CONTEXT = `
 Daftar 9 layanan digital SDN 02 Cibadak (gunakan id ini saat menjawab):
 - perpus: E-Perpus (perpus.sdn02cibadak.sch.id) — perpustakaan digital
 - warga: Warga Sekolah (warga.sdn02cibadak.sch.id) — direktori warga sekolah
-- ops: Sistem OPS (ops.sdn02cibadak.sch.id) — operasional, jadwal, surat
+- ops: Sistem OPS (ops.sdn02cibadak.sch.id) — web pribadi khusus operator sekolah untuk memantau data dan sistem
 - spmb: SPMB (spmb.sdn02cibadak.sch.id) — penerimaan murid baru
 - presensi: Presensi Kehadiran (presensi.sdn02cibadak.sch.id) — absensi & notifikasi wali
 - siswa: Portal Siswa (siswa.sdn02cibadak.sch.id) — rapor, nilai, tugas

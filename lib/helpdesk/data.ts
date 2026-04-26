@@ -39,7 +39,7 @@ export const SERVICES: Service[] = [
     name: "Sistem OPS",
     url: "ops.sdn02cibadak.sch.id",
     icon: Settings,
-    description: "Operasional internal sekolah: jadwal, surat, dan administrasi.",
+    description: "Web pribadi khusus operator sekolah untuk memantau data dan sistem.",
   },
   {
     id: "spmb",
