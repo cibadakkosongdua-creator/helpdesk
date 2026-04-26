@@ -11,11 +11,13 @@ export function ReplyThread({
   ticket,
   as,
   authorName,
+  authorPhotoUrl,
   onError,
 }: {
   ticket: Ticket
   as: "admin" | "reporter"
   authorName: string
+  authorPhotoUrl?: string
   onError?: (msg: string) => void
 }) {
   const isResolved = ticket.status === "Resolved"
@@ -176,7 +178,7 @@ export function ReplyThread({
               className={`flex gap-2 items-start ${isMe ? "flex-row-reverse" : ""}`}
             >
               <div
-                className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+                className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center overflow-hidden ${
                   isInternalNote
                     ? "bg-amber-100 dark:bg-amber-500/15 text-amber-600 dark:text-amber-400"
                     : isAdmin
@@ -184,7 +186,14 @@ export function ReplyThread({
                       : "bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-300"
                 }`}
               >
-                {isInternalNote ? <Lock className="w-4 h-4" /> : isAdmin ? <ShieldCheck className="w-4 h-4" /> : <User className="w-4 h-4" />}
+                {!isAdmin && !isInternalNote && isMe && authorPhotoUrl ? (
+                  <img
+                    src={authorPhotoUrl}
+                    alt={authorName}
+                    className="w-full h-full object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+                ) : isInternalNote ? <Lock className="w-4 h-4" /> : isAdmin ? <ShieldCheck className="w-4 h-4" /> : <User className="w-4 h-4" />}
               </div>
               <div className={`max-w-[80%] flex flex-col ${isMe ? "items-end" : "items-start"}`}>
                 <div

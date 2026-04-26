@@ -18,7 +18,7 @@ import { createPortal } from "react-dom"
 import { aiSearchService } from "@/lib/helpdesk/gemini-client"
 import { FAQ_DATA, SERVICES, type Service } from "@/lib/helpdesk/data"
 import { subscribeSettings, type ServiceStatus, type FaqItem, type ServiceConfig, type AnnouncementConfig, type MaintenanceSchedule } from "@/lib/helpdesk/settings-service"
-import { subscribeTicketsByUser, type Ticket, type TicketStatus as TStatus } from "@/lib/helpdesk/firestore-service"
+import { subscribeTicketsByUser, subscribeTicketByCode, type Ticket, type TicketStatus as TStatus } from "@/lib/helpdesk/firestore-service"
 import EmergencyContacts from "./emergency-contacts"
 import type { ShowToastFn, View } from "./types"
 import type { AuthSession } from "@/lib/helpdesk/auth-service"
@@ -88,6 +88,7 @@ export function HomeView({
   const [redirecting, setRedirecting] = useState<Service | null>(null)
   const clearRedirect = useCallback(() => setRedirecting(null), [])
   const [lastTicket, setLastTicket] = useState<{ code: string; status: string } | null>(null)
+  const [lastTicketData, setLastTicketData] = useState<Ticket | null>(null)
 
   // Load last ticket from localStorage
   useEffect(() => {
@@ -96,6 +97,22 @@ export function HomeView({
       if (stored) setLastTicket(JSON.parse(stored))
     } catch {}
   }, [user?.uid])
+
+  // Subscribe to last ticket realtime untuk dapat unread count
+  useEffect(() => {
+    if (!lastTicket?.code) return
+    const unsub = subscribeTicketByCode(lastTicket.code, (t) => {
+      setLastTicketData(t)
+      if (t) {
+        // Sync status ke localStorage
+        try {
+          localStorage.setItem("helpdesk_last_ticket", JSON.stringify({ code: t.code, status: t.status }))
+          setLastTicket((prev) => prev ? { ...prev, status: t.status } : null)
+        } catch {}
+      }
+    })
+    return () => unsub()
+  }, [lastTicket?.code])
 
   // Jika user balik via Back (bfcache restore), tutup overlay jika ada
   useEffect(() => {
@@ -318,12 +335,23 @@ export function HomeView({
       {lastTicket && (
         <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
           <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-white/60 dark:bg-slate-900/40 backdrop-blur-md border border-slate-200/60 dark:border-white/10 shadow-sm">
-            <div className="w-8 h-8 rounded-xl bg-blue-100 dark:bg-blue-500/15 flex items-center justify-center shrink-0">
+            <div className="relative w-8 h-8 rounded-xl bg-blue-100 dark:bg-blue-500/15 flex items-center justify-center shrink-0">
               <TicketIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              {/* Unread badge */}
+              {lastTicketData && lastTicketData.unreadForReporter > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 flex items-center justify-center px-1 text-[9px] font-black bg-red-500 text-white rounded-full shadow-lg shadow-red-500/40 animate-in zoom-in duration-300">
+                  {lastTicketData.unreadForReporter > 9 ? "9+" : lastTicketData.unreadForReporter}
+                </span>
+              )}
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Tiket Terakhir Saya</p>
               <p className="text-sm font-bold text-slate-900 dark:text-white font-mono">{lastTicket.code}</p>
+              {lastTicketData && lastTicketData.unreadForReporter > 0 && (
+                <p className="text-[10px] font-bold text-red-500 dark:text-red-400 mt-0.5 animate-pulse">
+                  {lastTicketData.unreadForReporter} pesan baru dari admin
+                </p>
+              )}
             </div>
             <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border ${
               lastTicket.status === "Resolved"
@@ -337,10 +365,14 @@ export function HomeView({
             </span>
             <a
               href={`/tiket/${lastTicket.code}`}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-bold hover:scale-105 active:scale-95 transition-all shrink-0"
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold hover:scale-105 active:scale-95 transition-all shrink-0 ${
+                lastTicketData && lastTicketData.unreadForReporter > 0
+                  ? "bg-red-500 text-white shadow-sm shadow-red-500/30"
+                  : "bg-slate-900 dark:bg-white text-white dark:text-slate-900"
+              }`}
             >
               <ChevronRight className="w-3.5 h-3.5" />
-              Lacak
+              {lastTicketData && lastTicketData.unreadForReporter > 0 ? "Lihat Balasan" : "Lacak"}
             </a>
           </div>
         </div>

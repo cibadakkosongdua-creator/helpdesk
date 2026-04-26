@@ -26,6 +26,7 @@ import {
   type TicketStatus,
 } from "@/lib/helpdesk/firestore-service"
 import { ReplyThread } from "./reply-thread"
+import { subscribeAuth, type AuthSession } from "@/lib/helpdesk/auth-service"
 
 export function TicketTrack({ code }: { code: string }) {
   const normalized = code.toUpperCase().trim()
@@ -33,6 +34,12 @@ export function TicketTrack({ code }: { code: string }) {
   const [loading, setLoading] = useState(true)
   const [reporterName, setReporterName] = useState("")
   const [copied, setCopied] = useState(false)
+  const [auth, setAuth] = useState<AuthSession | null>(null)
+
+  useEffect(() => {
+    const unsub = subscribeAuth(setAuth)
+    return () => unsub()
+  }, [])
 
   const handleShare = () => {
     const url = typeof window !== "undefined" ? window.location.href : ""
@@ -225,6 +232,7 @@ export function TicketTrack({ code }: { code: string }) {
                 ticket={ticket}
                 as="reporter"
                 authorName={reporterName || ticket.name}
+                authorPhotoUrl={auth?.photoURL ?? undefined}
               />
             </section>
           </div>
