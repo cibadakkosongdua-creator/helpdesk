@@ -27,7 +27,21 @@ export function ChatWidget() {
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null)
   const [chatHistory, setChatHistory] = useState<ChatSession[]>([])
   const [showProactive, setShowProactive] = useState(false)
+  const [scrollProgress, setScrollProgress] = useState(0)
   const scrollRef = useRef<HTMLDivElement>(null)
+
+  // Track page scroll progress
+  useEffect(() => {
+    const handleScroll = () => {
+      const winScroll = document.documentElement.scrollTop
+      const height = document.documentElement.scrollHeight - document.documentElement.clientHeight
+      const scrolled = (winScroll / height) * 100
+      setScrollProgress(scrolled)
+    }
+
+    window.addEventListener("scroll", handleScroll)
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [])
 
   // Proactive message - show after 5 seconds if chat not opened
   useEffect(() => {
@@ -297,8 +311,42 @@ export function ChatWidget() {
             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-400/20 to-transparent -translate-y-full group-hover:animate-[shimmer_2s_infinite]" />
           </div>
 
-          {/* Outer Neural Ring */}
-          <div className="absolute inset-[-4px] border-2 border-dashed border-blue-500/30 rounded-full animate-spin-slow group-hover:border-blue-500/60" />
+          {/* Outer Neural Progress Ring */}
+          <svg className="absolute inset-[-8px] w-[calc(100%+16px)] h-[calc(100%+16px)] -rotate-90" viewBox="0 0 100 100">
+            <circle
+              cx="50"
+              cy="50"
+              r="46"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              className="text-blue-500/10"
+            />
+            <circle
+              cx="50"
+              cy="50"
+              r="46"
+              fill="none"
+              stroke="url(#neural-gradient)"
+              strokeWidth="3"
+              strokeLinecap="round"
+              style={{ 
+                strokeDasharray: "289", 
+                strokeDashoffset: 289 - (289 * scrollProgress) / 100,
+                transition: "stroke-dashoffset 0.1s linear"
+              }}
+              className="drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]"
+            />
+            <defs>
+              <linearGradient id="neural-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#3b82f6" />
+                <stop offset="100%" stopColor="#8b5cf6" />
+              </linearGradient>
+            </defs>
+          </svg>
+
+          {/* Additional Decorative Ring */}
+          <div className="absolute inset-[-4px] border border-blue-500/10 rounded-full animate-spin-slow opacity-50" />
         </button>
       )}
     </div>
