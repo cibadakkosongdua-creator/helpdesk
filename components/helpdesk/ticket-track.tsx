@@ -26,6 +26,7 @@ import {
   type TicketStatus,
 } from "@/lib/helpdesk/firestore-service"
 import { ReplyThread } from "./reply-thread"
+import { TicketQr } from "./ticket-qr"
 import { subscribeAuth, type AuthSession } from "@/lib/helpdesk/auth-service"
 
 export function TicketTrack({ code }: { code: string }) {
@@ -75,14 +76,14 @@ export function TicketTrack({ code }: { code: string }) {
         <div className="absolute bottom-[-20%] right-[-10%] w-[55%] h-[55%] bg-indigo-500/10 dark:bg-indigo-600/15 rounded-full blur-[140px]" />
       </div>
 
-      <header className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-4 flex items-center justify-between">
-        <div className="flex flex-col gap-1">
-          <nav className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">
-            <Link href="/" className="hover:text-slate-900 dark:hover:text-white transition-colors">Beranda</Link>
-            <span>/</span>
-            <span>Lacak Tiket</span>
-            <span>/</span>
-            <span className="text-blue-600 dark:text-blue-400">{normalized || "Cari"}</span>
+      <header className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-4 flex items-center justify-between gap-2 flex-wrap">
+        <div className="flex flex-col gap-1 min-w-0">
+          <nav className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1 flex-wrap">
+            <Link href="/" className="hover:text-slate-900 dark:hover:text-white transition-colors shrink-0">Beranda</Link>
+            <span className="shrink-0">/</span>
+            <span className="shrink-0">Lacak Tiket</span>
+            <span className="shrink-0">/</span>
+            <span className="text-blue-600 dark:text-blue-400 font-mono truncate max-w-[90px] sm:max-w-none">{normalized || "Cari"}</span>
           </nav>
           <Link
             href="/"
@@ -92,7 +93,7 @@ export function TicketTrack({ code }: { code: string }) {
             Kembali
           </Link>
         </div>
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border border-slate-200/60 dark:border-white/10 text-xs font-bold text-slate-600 dark:text-slate-300">
+        <div className="hidden sm:inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border border-slate-200/60 dark:border-white/10 text-xs font-bold text-slate-600 dark:text-slate-300 shrink-0">
           <Search className="w-3.5 h-3.5" />
           Pelacakan Tiket Publik
         </div>
@@ -155,6 +156,7 @@ export function TicketTrack({ code }: { code: string }) {
                     {copied ? <Check className="w-3.5 h-3.5" /> : <Share2 className="w-3.5 h-3.5" />}
                     {copied ? "Tersalin!" : "Bagikan"}
                   </button>
+                  <TicketQr url={typeof window !== "undefined" ? window.location.href : `/tiket/${ticket.code}`} />
                 </div>
               </div>
 
@@ -169,7 +171,7 @@ export function TicketTrack({ code }: { code: string }) {
                 <MetaCell label="Departemen" value={ticket.department} accent="indigo" />
               </div>
 
-              <div className="mt-6">
+              <div className="mt-4">
                 <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">
                   Keluhan Awal
                 </p>

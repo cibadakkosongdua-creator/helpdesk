@@ -10,14 +10,17 @@ import {
   Flame,
   Lock,
   LogIn,
+  Map as MapIcon,
   Plus,
   Search,
   Send,
   Sparkles,
   Ticket as TicketIcon,
   MessageCircle,
+  X,
 } from "lucide-react"
 import { useEffect, useState } from "react"
+import { createPortal } from "react-dom"
 import { useSettingsServices } from "@/hooks/use-settings-services"
 import {
   findRecentTicketsByService,
@@ -32,6 +35,8 @@ import { aiAnalyzeTicket, aiDuplicateCheck } from "@/lib/helpdesk/gemini-client"
 import { signInWithGoogle, type AuthSession } from "@/lib/helpdesk/auth-service"
 import { useSoundEffect } from "@/lib/helpdesk/use-sound"
 import { AttachmentUpload, type PendingFile } from "./attachment-upload"
+import { SchoolMap } from "./school-map"
+import { TicketQr } from "./ticket-qr"
 import type { ShowToastFn } from "./types"
 import { VoiceInput } from "./voice-input"
 
@@ -71,6 +76,7 @@ export function TicketView({
   const [created, setCreated] = useState<Ticket | null>(null)
   const [copied, setCopied] = useState(false)
   const [myTickets, setMyTickets] = useState<Ticket[]>([])
+  const [showMap, setShowMap] = useState(false)
   const { playChime } = useSoundEffect()
 
   const [formData, setFormData] = useState({
@@ -295,8 +301,7 @@ export function TicketView({
               Simpan kode tiket di bawah. Anda dapat mengeceknya kapan saja tanpa login, dan
               berkomunikasi dengan admin sekolah.
             </p>
-
-            <div className="mt-6 bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-white/10 rounded-2xl px-6 py-4 font-mono text-3xl md:text-4xl font-extrabold tracking-widest">
+            <div className="bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-white/10 rounded-2xl px-6 py-4 font-mono text-3xl md:text-4xl font-extrabold tracking-widest text-center">
               {created.code}
             </div>
 
@@ -315,6 +320,7 @@ export function TicketView({
                 >
                   <Search className="w-4 h-4" /> Lacak Tiket
                 </a>
+                <TicketQr url={trackUrl} />
               </div>
               <a
                 href={`https://wa.me/?text=${encodeURIComponent(`Halo Admin SDN 02 Cibadak, saya baru saja membuat tiket bantuan dengan kode *${created.code}*.\n\nLink Pelacakan: ${trackUrl}`)}`}
@@ -553,6 +559,13 @@ export function TicketView({
               }`}>
                 {formData.details.length}/500
               </span>
+              <button
+                type="button"
+                onClick={() => setShowMap(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+              >
+                <MapIcon className="w-3.5 h-3.5" /> Pilih Denah
+              </button>
               <VoiceInput
                 onTranscript={(t) =>
                   setFormData((prev) => ({
@@ -661,6 +674,35 @@ export function TicketView({
           )}
         </button>
       </form>
+
+      {showMap && typeof window !== "undefined" && createPortal(
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="w-full max-w-4xl max-h-[90vh] bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
+            <div className="flex items-center justify-between p-4 md:p-6 border-b border-slate-100 dark:border-white/5">
+              <div>
+                <h3 className="text-xl font-extrabold text-slate-900 dark:text-white">Pilih Lokasi Kejadian</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Tap/Klik ruangan pada denah untuk memasukkan lokasi.</p>
+              </div>
+              <button onClick={() => setShowMap(false)} className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400 transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-4 md:p-6 bg-slate-50 dark:bg-slate-950 overflow-auto">
+              <SchoolMap
+                onSelect={(room) => {
+                  setFormData(prev => ({
+                    ...prev,
+                    details: prev.details ? `${prev.details}\nLokasi: ${room}` : `Lokasi: ${room}`
+                  }))
+                  setShowMap(false)
+                  showToast(`Lokasi disetel ke ${room}`, "success")
+                }}
+              />
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   )
 }
