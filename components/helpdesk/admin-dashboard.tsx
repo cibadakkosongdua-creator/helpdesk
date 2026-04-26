@@ -49,6 +49,7 @@ import {
   type TicketStatus,
   type TicketPriority,
   type Department,
+  updateAdminPresence,
 } from "@/lib/helpdesk/firestore-service"
 import { subscribeGuests, type Guest } from "@/lib/helpdesk/guest-service"
 import { saveSettings } from "@/lib/helpdesk/settings-service"
@@ -156,6 +157,16 @@ export function AdminDashboard({
       unsubG()
     }
   }, [])
+
+  // Admin presence heartbeat
+  useEffect(() => {
+    if (!admin?.email) return
+    void updateAdminPresence(admin.email)
+    const interval = setInterval(() => {
+      void updateAdminPresence(admin.email)
+    }, 30000)
+    return () => clearInterval(interval)
+  }, [admin])
 
   // keep dialog in sync with live data
   useEffect(() => {

@@ -30,6 +30,7 @@ import {
 } from "@/lib/helpdesk/firestore-service"
 import { aiAnalyzeTicket, aiDuplicateCheck } from "@/lib/helpdesk/gemini-client"
 import { signInWithGoogle, type AuthSession } from "@/lib/helpdesk/auth-service"
+import { useSoundEffect } from "@/lib/helpdesk/use-sound"
 import { AttachmentUpload, type PendingFile } from "./attachment-upload"
 import type { ShowToastFn } from "./types"
 import { VoiceInput } from "./voice-input"
@@ -70,6 +71,7 @@ export function TicketView({
   const [created, setCreated] = useState<Ticket | null>(null)
   const [copied, setCopied] = useState(false)
   const [myTickets, setMyTickets] = useState<Ticket[]>([])
+  const { playChime } = useSoundEffect()
 
   const [formData, setFormData] = useState({
     name: "",
@@ -236,6 +238,7 @@ export function TicketView({
         localStorage.removeItem(DRAFT_KEY)
       } catch {}
       if (navigator.vibrate) navigator.vibrate([10, 40, 10])
+      playChime()
     } catch (err: any) {
       showToast(err?.message || "Gagal mengirim tiket.", "error")
     } finally {

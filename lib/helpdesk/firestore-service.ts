@@ -10,6 +10,7 @@ import {
   orderBy,
   query,
   updateDoc,
+  setDoc,
   where,
   writeBatch,
   Timestamp,
@@ -942,5 +943,53 @@ export async function updateChatSession(
     })
   } catch {
     // ignore
+  }
+}
+
+/* ---------- Admin Presence ---------- */
+
+const PRESENCE_COL = "_presence"
+
+export async function updateAdminPresence(email: string) {
+  const { db } = getFirebase()
+  if (!db) return
+  try {
+    const safeEmail = email.replace(/\./g, "_")
+    await updateDoc(doc(db, PRESENCE_COL, "admins"), {
+      [safeEmail]: Date.now(),
+    }).catch(async (e) => {
+      // Create if not exists
+      if (e.code === "not-found") {
+        await setDoc(doc(db, PRESENCE_COL, "admins"), {
+          [safeEmail]: Date.now(),
+        })
+      }
+    })
+  } catch {
+    /* ignore */
+  }
+}
+
+export function subscribeAdminPresence(cb: (onlineCount: number) => void): () => void {
+  const { db } = getFirebase()
+  if (!db) return () => {}
+  try {
+    return onSnapshot(doc(db, PRESENCE_COL, "admins"), (snap) => {
+      if (!snap.exists()) {
+        cb(0)
+        return
+      }
+      const data = snap.data()
+      const now = Date.now()
+      let count = 0
+      for (const val of Object.values(data)) {
+        if (typeof val === "number" && now - val < 60000) {
+          count++
+        }
+      }
+      cb(count)
+    })
+  } catch {
+    return () => {}
   }
 }

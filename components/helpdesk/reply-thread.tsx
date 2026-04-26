@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react"
 import { addReply, markRepliesRead, setTyping, subscribeReplies, type Reply, type Ticket } from "@/lib/helpdesk/firestore-service"
 import { aiSuggestReply } from "@/lib/helpdesk/gemini-client"
 import { subscribeSettings, type ReplyTemplate } from "@/lib/helpdesk/settings-service"
+import { useSoundEffect } from "@/lib/helpdesk/use-sound"
 import { EmojiPicker } from "./emoji-picker"
 
 export function ReplyThread({
@@ -31,6 +32,20 @@ export function ReplyThread({
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const tplRef = useRef<HTMLDivElement>(null)
   const endRef = useRef<HTMLDivElement>(null)
+  const { playPop } = useSoundEffect()
+  const prevLengthRef = useRef(0)
+
+  // Play sound on new message
+  useEffect(() => {
+    if (replies.length > prevLengthRef.current) {
+      const newMessages = replies.slice(prevLengthRef.current)
+      const hasNewFromOther = newMessages.some((r) => r.author !== as)
+      if (hasNewFromOther && prevLengthRef.current > 0) {
+        playPop()
+      }
+    }
+    prevLengthRef.current = replies.length
+  }, [replies, as, playPop])
 
   useEffect(() => {
     const unsub = subscribeReplies(ticket.id, setReplies)

@@ -19,7 +19,7 @@ import { createPortal } from "react-dom"
 import { aiSearchService } from "@/lib/helpdesk/gemini-client"
 import { FAQ_DATA, SERVICES, type Service } from "@/lib/helpdesk/data"
 import { subscribeSettings, type ServiceStatus, type FaqItem, type ServiceConfig, type AnnouncementConfig, type MaintenanceSchedule } from "@/lib/helpdesk/settings-service"
-import { subscribeTicketsByUser, subscribeTicketByCode, type Ticket, type TicketStatus as TStatus } from "@/lib/helpdesk/firestore-service"
+import { subscribeTicketsByUser, subscribeTicketByCode, type Ticket, type TicketStatus as TStatus, subscribeAdminPresence } from "@/lib/helpdesk/firestore-service"
 import EmergencyContacts from "./emergency-contacts"
 import type { ShowToastFn, View } from "./types"
 import type { AuthSession } from "@/lib/helpdesk/auth-service"
@@ -67,6 +67,7 @@ export function HomeView({
   const [dynamicServices, setDynamicServices] = useState<ServiceConfig[] | null>(null)
   const [settingsLoaded, setSettingsLoaded] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [onlineAdmins, setOnlineAdmins] = useState(0)
 
   useEffect(() => {
     setMounted(true)
@@ -171,7 +172,11 @@ export function HomeView({
       }
       setSettingsLoaded(true)
     })
-    return () => unsub()
+    const unsubPresence = subscribeAdminPresence(setOnlineAdmins)
+    return () => {
+      unsub()
+      unsubPresence()
+    }
   }, [])
 
   // Merge dynamic services with static icon map
@@ -290,9 +295,20 @@ export function HomeView({
           <p className="text-lg md:text-xl font-semibold text-slate-700 dark:text-slate-300 animate-in fade-in slide-in-from-left-4 duration-500 min-h-[30px]">
             {mounted ? getGreeting(user?.name ?? undefined) : "Selamat datang 👋"}
           </p>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-500/10 border border-blue-200/60 dark:border-blue-500/20 text-blue-600 dark:text-blue-400 text-xs font-semibold tracking-wide uppercase">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Sistem Terpadu &middot; v2.0</span>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-500/10 border border-blue-200/60 dark:border-blue-500/20 text-blue-600 dark:text-blue-400 text-xs font-semibold tracking-wide uppercase">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Sistem Terpadu &middot; v2.0</span>
+            </div>
+            {onlineAdmins > 0 && (
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200/60 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-semibold tracking-wide uppercase animate-in fade-in zoom-in duration-500">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span>{onlineAdmins} Admin Online</span>
+              </div>
+            )}
           </div>
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.05] text-balance">
             <span className="text-slate-900 dark:text-white">Ekosistem Digital </span>
