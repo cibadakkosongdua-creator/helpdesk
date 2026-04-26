@@ -30,6 +30,8 @@ import {
   type LucideIcon,
 } from "lucide-react"
 import { useEffect, useMemo, useRef, useState } from "react"
+import { pdf } from "@react-pdf/renderer"
+import { ReportPDF } from "./report-pdf"
 import type { AdminSession } from "@/lib/helpdesk/auth-service"
 import { exportAuditsCSV, exportFeedbacksCSV, exportTicketsCSV, printReport } from "@/lib/helpdesk/csv-export"
 import { useSettingsServices } from "@/hooks/use-settings-services"
@@ -79,6 +81,7 @@ export function AdminDashboard({
   const [tab, setTab] = useState<Tab>("tickets")
   const [loadingTickets, setLoadingTickets] = useState(true)
   const [loadingFeedbacks, setLoadingFeedbacks] = useState(true)
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false)
 
   const [openTicket, setOpenTicket] = useState<Ticket | null>(null)
 
@@ -446,6 +449,50 @@ export function AdminDashboard({
     showToast(`${count} tiket berhasil dihapus.`, "success")
   }
 
+  const handlePrintPDF = async () => {
+    let dataToPrint: any[] = []
+    let type: "tickets" | "surveys" | "audit" = "tickets"
+
+    if (tab === "tickets") {
+      dataToPrint = filteredTickets
+      type = "tickets"
+    } else if (tab === "surveys") {
+      dataToPrint = filteredFeedbacks
+      type = "surveys"
+    } else if (tab === "audit") {
+      dataToPrint = filteredAudits
+      type = "audit"
+    } else {
+      printReport()
+      return
+    }
+
+    if (dataToPrint.length === 0) {
+      showToast("Tidak ada data untuk dicetak", "warning")
+      return
+    }
+
+    setIsGeneratingPDF(true)
+    try {
+      const doc = <ReportPDF type={type} data={dataToPrint} serviceName={serviceName} />
+      const blob = await pdf(doc).toBlob()
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement("a")
+      link.href = url
+      link.download = `rekapan-${type}-${new Date().getTime()}.pdf`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+      showToast("PDF berhasil dibuat", "success")
+    } catch (error) {
+      console.error("PDF generation failed:", error)
+      showToast("Gagal membuat PDF", "error")
+    } finally {
+      setIsGeneratingPDF(false)
+    }
+  }
+
   return (
     <div className="w-full animate-in fade-in slide-in-from-bottom-8 duration-700 space-y-6">
       <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
@@ -573,10 +620,16 @@ export function AdminDashboard({
             </button>
           )}
           <button
-            onClick={printReport}
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-bold shadow-sm transition-colors"
+            onClick={handlePrintPDF}
+            disabled={isGeneratingPDF}
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-bold shadow-sm transition-colors disabled:opacity-50"
           >
-            <Printer className="w-3.5 h-3.5" /> Cetak
+            {isGeneratingPDF ? (
+              <div className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <Printer className="w-3.5 h-3.5" />
+            )}
+            {isGeneratingPDF ? "Memproses..." : "Cetak"}
           </button>
         </div>
       </div>
