@@ -65,6 +65,11 @@ export function HomeView({
   const [faqItems, setFaqItems] = useState<FaqItem[]>(FAQ_DATA)
   const [dynamicServices, setDynamicServices] = useState<ServiceConfig[] | null>(null)
   const [settingsLoaded, setSettingsLoaded] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
   const [announcement, setAnnouncement] = useState<AnnouncementConfig | null>(null)
   const [announcementDismissed, setAnnouncementDismissed] = useState(false)
   const [maintenanceSchedules, setMaintenanceSchedules] = useState<MaintenanceSchedule[]>([])
@@ -281,8 +286,8 @@ export function HomeView({
       <section className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
         <div className="space-y-4">
           {/* Greeting — selalu tampil, nama hanya jika login */}
-          <p className="text-lg md:text-xl font-semibold text-slate-700 dark:text-slate-300 animate-in fade-in slide-in-from-left-4 duration-500">
-            {getGreeting(user?.name ?? undefined)}
+          <p className="text-lg md:text-xl font-semibold text-slate-700 dark:text-slate-300 animate-in fade-in slide-in-from-left-4 duration-500 min-h-[30px]">
+            {mounted ? getGreeting(user?.name ?? undefined) : "Selamat datang 👋"}
           </p>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-500/10 border border-blue-200/60 dark:border-blue-500/20 text-blue-600 dark:text-blue-400 text-xs font-semibold tracking-wide uppercase">
             <Sparkles className="w-3.5 h-3.5" />
