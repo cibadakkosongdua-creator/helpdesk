@@ -506,19 +506,15 @@ function TicketRating({ ticket }: { ticket: Ticket }) {
 }
 
 function ElapsedTime({ createdAt }: { createdAt: number }) {
+  const [mounted, setMounted] = useState(false)
   const [, setTick] = useState(0)
 
   useEffect(() => {
+    setMounted(true)
     const interval = setInterval(() => setTick((t) => t + 1), 60000)
     return () => clearInterval(interval)
   }, [])
 
-  const diffMs = Date.now() - createdAt
-  const diffMins = Math.floor(diffMs / 60000)
-  const diffHours = Math.floor(diffMins / 60)
-  const diffDays = Math.floor(diffHours / 24)
-
-  let label: string
   const dateStr = new Date(createdAt).toLocaleString("id-ID", {
     day: "numeric",
     month: "short",
@@ -527,6 +523,14 @@ function ElapsedTime({ createdAt }: { createdAt: number }) {
     minute: "2-digit",
   })
 
+  if (!mounted) return <span>{dateStr}</span>
+
+  const diffMs = Date.now() - createdAt
+  const diffMins = Math.floor(diffMs / 60000)
+  const diffHours = Math.floor(diffMins / 60)
+  const diffDays = Math.floor(diffHours / 24)
+
+  let label: string
   if (diffMins < 1) label = "Baru saja dibuat"
   else if (diffMins < 60) label = `${diffMins} menit lalu`
   else if (diffHours < 24) label = `${diffHours} jam ${diffMins % 60} menit lalu`
