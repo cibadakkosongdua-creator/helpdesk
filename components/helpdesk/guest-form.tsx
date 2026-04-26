@@ -354,8 +354,8 @@ export function GuestForm({ showToast, onSuccess }: { showToast: ShowToastFn; on
               Nama Lengkap *
             </label>
 
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 scale-75 opacity-70 hover:opacity-100 transition-opacity">
-              <VoiceInput onTranscript={(text) => setFormData({ ...formData, name: text })} />
+            <div className="absolute right-2 top-1/2 -translate-y-1/2 transition-opacity">
+              <VoiceInput compact onTranscript={(text) => setFormData({ ...formData, name: text })} />
             </div>
           </div>
         </div>
@@ -438,8 +438,8 @@ export function GuestForm({ showToast, onSuccess }: { showToast: ShowToastFn; on
               Keperluan *
             </label>
 
-            <div className="absolute right-3 top-6 -translate-y-1/2 scale-75 opacity-70 hover:opacity-100 transition-opacity">
-              <VoiceInput onTranscript={(text) => setFormData({ ...formData, purpose: text })} />
+            <div className="absolute right-2 top-6 -translate-y-1/2 transition-opacity">
+              <VoiceInput compact onTranscript={(text) => setFormData({ ...formData, purpose: text })} />
             </div>
           </div>
         </div>

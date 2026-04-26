@@ -10,9 +10,11 @@ import { useEffect, useRef, useState } from "react"
 export function VoiceInput({
   onTranscript,
   lang = "id-ID",
+  compact = false,
 }: {
   onTranscript: (text: string) => void
   lang?: string
+  compact?: boolean
 }) {
   const [supported, setSupported] = useState(false)
   const [listening, setListening] = useState(false)
@@ -68,7 +70,9 @@ export function VoiceInput({
     <button
       type="button"
       onClick={listening ? stop : start}
-      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+      className={`inline-flex items-center justify-center transition-all ${
+        compact && !listening ? "p-2" : "gap-1.5 px-3 py-1.5"
+      } rounded-lg text-xs font-bold ${
         listening
           ? "bg-red-500/90 text-white animate-pulse"
           : "bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-white/10"
@@ -76,7 +80,7 @@ export function VoiceInput({
       aria-label={listening ? "Hentikan rekaman suara" : "Mulai rekaman suara"}
     >
       {listening ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
-      {listening ? "Berhenti" : "Rekam Suara"}
+      {(!compact || listening) && (listening ? "Berhenti" : "Rekam Suara")}
     </button>
   )
 }
