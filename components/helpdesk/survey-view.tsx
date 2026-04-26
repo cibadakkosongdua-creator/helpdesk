@@ -135,20 +135,11 @@ export function SurveyView({ showToast, user }: { showToast: ShowToastFn; user: 
           <label className="text-xs font-semibold tracking-wide text-slate-700 dark:text-slate-300 uppercase ml-1">
             Layanan yang Dievaluasi
           </label>
-          <div className="relative">
-            <select
-              value={formData.service}
-              onChange={(e) => setFormData({ ...formData, service: e.target.value })}
-              className="w-full appearance-none bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-white/10 rounded-2xl px-5 py-4 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-amber-500/50 focus:ring-4 focus:ring-amber-500/10 transition-all font-medium cursor-pointer"
-            >
-              {settingsServices.map((s) => (
-                <option key={s.id} value={s.id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
-                  {s.name}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
-          </div>
+          <ServiceDropdown
+            value={formData.service}
+            onChange={(v) => setFormData({ ...formData, service: v })}
+            options={settingsServices.map((s) => ({ value: s.id, label: s.name }))}
+          />
         </div>
 
         <div className="space-y-3 relative z-10">
@@ -225,6 +216,65 @@ export function SurveyView({ showToast, user }: { showToast: ShowToastFn; user: 
           )}
         </button>
       </form>
+      )}
+    </div>
+  )
+}
+
+function ServiceDropdown({
+  value,
+  onChange,
+  options,
+}: {
+  value: string
+  onChange: (v: string) => void
+  options: { value: string; label: string }[]
+}) {
+  const [isOpen, setIsOpen] = useState(false)
+  const selectedLabel = options.find((o) => o.value === value)?.label || value
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className={`w-full flex items-center justify-between bg-slate-50 dark:bg-slate-950/60 border ${
+          isOpen ? "border-amber-500/50 ring-4 ring-amber-500/10" : "border-slate-200 dark:border-white/10"
+        } rounded-2xl px-5 py-4 text-sm text-slate-900 dark:text-white transition-all font-medium text-left`}
+      >
+        <span className="truncate">{selectedLabel}</span>
+        <ChevronDown
+          className={`w-5 h-5 text-slate-400 transition-transform duration-300 ${
+            isOpen ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+
+      {isOpen && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
+          <div className="absolute top-full left-0 right-0 mt-2 z-50 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-none overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+            <div className="max-h-60 overflow-y-auto p-1.5 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-white/10">
+              {options.map((o) => (
+                <button
+                  key={o.value}
+                  type="button"
+                  onClick={() => {
+                    onChange(o.value)
+                    setIsOpen(false)
+                  }}
+                  className={`w-full flex items-center px-4 py-3 text-sm rounded-xl transition-colors ${
+                    o.value === value
+                      ? "bg-amber-500 text-white font-bold"
+                      : "text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5"
+                  }`}
+                >
+                  {o.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </>
       )}
     </div>
   )
