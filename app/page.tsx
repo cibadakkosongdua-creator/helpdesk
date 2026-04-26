@@ -258,6 +258,14 @@ function FooterLink({ href, label }: { href: string; label: string }) {
       icon: <Youtube className="w-4 h-4" />, 
       color: "hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 hover:border-red-200" 
     }
+    if (l.includes("tiktok")) return { 
+      icon: (
+        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.06 3.43-.01 6.85-.04 10.27-.01 1.35-.35 2.77-1.13 3.88-.95 1.45-2.58 2.37-4.32 2.65-1.87.35-3.9-.06-5.41-1.22-1.61-1.21-2.48-3.28-2.22-5.27.21-1.72 1.17-3.34 2.63-4.23 1.25-.79 2.78-1.12 4.24-.96v4.02c-.63-.12-1.3-.08-1.9.15-.81.3-1.46.96-1.74 1.76-.36.9-.2 1.99.4 2.75.56.74 1.48 1.15 2.41 1.05.95-.06 1.83-.67 2.24-1.52.33-.65.4-1.39.38-2.11V0z" />
+        </svg>
+      ), 
+      color: "hover:text-black dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 hover:border-slate-300" 
+    }
     if (l.includes("github")) return { 
       icon: <Github className="w-4 h-4" />, 
       color: "hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 hover:border-slate-300" 
