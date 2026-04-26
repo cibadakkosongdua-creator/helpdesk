@@ -28,7 +28,7 @@ export function GuestQrGenerator({ showToast }: { showToast: ShowToastFn }) {
     const qrCode = new QRCodeStyling({
       width: 300,
       height: 300,
-      type: "png",
+      type: "svg",
       data: baseUrl,
       image: "/logo.png",
       imageOptions: {

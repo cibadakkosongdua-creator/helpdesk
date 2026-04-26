@@ -10,6 +10,7 @@ import {
   Font,
 } from "@react-pdf/renderer"
 import type { Ticket, Feedback, AuditLog } from "@/lib/helpdesk/firestore-service"
+import type { Guest } from "@/lib/helpdesk/guest-service"
 
 // Register standard fonts if needed, but standard fonts like Helvetica are built-in
 // styles
@@ -86,7 +87,7 @@ const styles = StyleSheet.create({
 })
 
 interface ReportPDFProps {
-  type: "tickets" | "surveys" | "audit"
+  type: "tickets" | "surveys" | "audit" | "guests"
   data: any[]
   serviceName?: (id: string) => string
 }
@@ -107,7 +108,9 @@ export const ReportPDF = ({ type, data, serviceName }: ReportPDFProps) => {
               ? "Rekapan Tiket Helpdesk" 
               : type === "surveys" 
                 ? "Rekapan Indeks Kepuasan Masyarakat" 
-                : "Audit Log System"}
+                : type === "guests"
+                  ? "Rekapan Buku Tamu Digital"
+                  : "Audit Log System"}
           </Text>
           <Text style={styles.subtitle}>Dicetak pada: {dateStr}</Text>
           <Text style={styles.subtitle}>Total Data: {data.length}</Text>
@@ -132,6 +135,14 @@ export const ReportPDF = ({ type, data, serviceName }: ReportPDFProps) => {
                 <Text style={[styles.tableCell, { width: "25%" }]}>Layanan</Text>
                 <Text style={[styles.tableCell, { width: "10%" }]}>Rating</Text>
                 <Text style={[styles.tableCell, { width: "45%" }]}>Ulasan</Text>
+              </>
+            ) : type === "guests" ? (
+              <>
+                <Text style={[styles.tableCell, { width: "15%" }]}>Waktu</Text>
+                <Text style={[styles.tableCell, { width: "20%" }]}>Nama</Text>
+                <Text style={[styles.tableCell, { width: "15%" }]}>Kategori</Text>
+                <Text style={[styles.tableCell, { width: "35%" }]}>Tujuan</Text>
+                <Text style={[styles.tableCell, { width: "15%" }]}>Status</Text>
               </>
             ) : (
               <>
@@ -165,6 +176,16 @@ export const ReportPDF = ({ type, data, serviceName }: ReportPDFProps) => {
                   </Text>
                   <Text style={[styles.tableCell, { width: "10%" }]}>{(item as Feedback).rating}/5</Text>
                   <Text style={[styles.tableCell, { width: "45%" }]}>{(item as Feedback).feedback}</Text>
+                </>
+              ) : type === "guests" ? (
+                <>
+                  <Text style={[styles.tableCell, { width: "15%" }]}>
+                    {new Date((item as Guest).checkInTime).toLocaleDateString("id-ID")}
+                  </Text>
+                  <Text style={[styles.tableCell, { width: "20%" }]}>{(item as Guest).name}</Text>
+                  <Text style={[styles.tableCell, { width: "15%" }]}>{(item as Guest).category}</Text>
+                  <Text style={[styles.tableCell, { width: "35%" }]}>{(item as Guest).purpose}</Text>
+                  <Text style={[styles.tableCell, { width: "15%" }]}>{(item as Guest).status}</Text>
                 </>
               ) : (
                 <>

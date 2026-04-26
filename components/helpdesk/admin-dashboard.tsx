@@ -451,7 +451,7 @@ export function AdminDashboard({
 
   const handlePrintPDF = async () => {
     let dataToPrint: any[] = []
-    let type: "tickets" | "surveys" | "audit" = "tickets"
+    let type: "tickets" | "surveys" | "audit" | "guests" = "tickets"
 
     if (tab === "tickets") {
       dataToPrint = filteredTickets
@@ -462,13 +462,16 @@ export function AdminDashboard({
     } else if (tab === "audit") {
       dataToPrint = filteredAudits
       type = "audit"
+    } else if (tab === "guests") {
+      dataToPrint = guests
+      type = "guests"
     } else {
       printReport()
       return
     }
 
     if (dataToPrint.length === 0) {
-      showToast("Tidak ada data untuk dicetak", "warning")
+      showToast("Tidak ada data untuk dicetak", "error")
       return
     }
 
@@ -619,18 +622,20 @@ export function AdminDashboard({
               <FileDown className="w-3.5 h-3.5" /> Export CSV
             </button>
           )}
-          <button
-            onClick={handlePrintPDF}
-            disabled={isGeneratingPDF}
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-bold shadow-sm transition-colors disabled:opacity-50"
-          >
-            {isGeneratingPDF ? (
-              <div className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <Printer className="w-3.5 h-3.5" />
-            )}
-            {isGeneratingPDF ? "Memproses..." : "Cetak"}
-          </button>
+          {(tab === "tickets" || tab === "surveys" || tab === "audit" || tab === "guests") && (
+            <button
+              onClick={handlePrintPDF}
+              disabled={isGeneratingPDF}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-bold shadow-sm transition-colors disabled:opacity-50"
+            >
+              {isGeneratingPDF ? (
+                <div className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <Printer className="w-3.5 h-3.5" />
+              )}
+              {isGeneratingPDF ? "Memproses..." : "Cetak"}
+            </button>
+          )}
         </div>
       </div>
 

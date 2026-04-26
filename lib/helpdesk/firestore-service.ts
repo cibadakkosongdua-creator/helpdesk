@@ -82,6 +82,7 @@ export type Reply = {
   text: string
   createdAt: number
   readAt?: number // timestamp when read by the other party
+  isInternal?: boolean
 }
 
 export type AuditLog = {
