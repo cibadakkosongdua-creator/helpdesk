@@ -165,21 +165,21 @@ export default function Page() {
         <div className="flex flex-col items-center justify-center gap-6">
           
           {/* Top Level: Brand & Socials in a Capsule */}
-          <div className="flex flex-col md:flex-row items-center justify-between w-full gap-6 p-4 rounded-3xl bg-slate-50/80 dark:bg-slate-900/40 border border-slate-200/60 dark:border-white/5 shadow-sm backdrop-blur-md transition-all hover:shadow-md">
+          <div className="flex flex-col md:flex-row items-center justify-between w-full gap-4 md:gap-6 p-3 md:p-4 rounded-3xl bg-slate-50/80 dark:bg-slate-900/40 border border-slate-200/60 dark:border-white/5 shadow-sm backdrop-blur-md transition-all hover:shadow-md">
             
             {/* Brand Logo & Name */}
-            <div className="flex items-center gap-3 pl-2">
-              <div className="w-10 h-10 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-200/50 dark:border-white/10 flex items-center justify-center overflow-hidden group">
+            <div className="flex items-center justify-center gap-3 w-full md:w-auto px-2">
+              <div className="w-10 h-10 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-200/50 dark:border-white/10 flex items-center justify-center overflow-hidden group shrink-0">
                 <img src="/logo.png" alt="Logo" className="w-6 h-6 group-hover:scale-110 transition-transform duration-500" />
               </div>
-              <div className="flex flex-col">
+              <div className="flex flex-col text-left">
                 <h3 className="font-bold text-sm tracking-tight text-slate-800 dark:text-slate-200">SDN 02 Cibadak</h3>
                 <p className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-0.5">Portal Layanan Terpadu</p>
               </div>
             </div>
 
             {/* Social Links Dock */}
-            <div className="flex items-center gap-1 p-1.5 rounded-2xl bg-white dark:bg-slate-950 border border-slate-200/60 dark:border-white/5 shadow-sm">
+            <div className="flex flex-wrap items-center justify-center gap-1 p-1.5 w-full md:w-auto rounded-2xl bg-white dark:bg-slate-950 border border-slate-200/60 dark:border-white/5 shadow-sm">
                <FooterLink href="https://wa.me/6285156365324" label="WhatsApp" />
                {socialLinks.map((link) => (
                  <FooterLink key={link.id} href={link.url} label={link.platform} />
@@ -187,21 +187,33 @@ export default function Page() {
             </div>
           </div>
 
-          {/* Bottom Level: Credits & Status */}
-          <div className="flex flex-col md:flex-row items-center justify-between w-full px-4 gap-3 text-[10px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-widest">
-            <div className="flex flex-wrap justify-center items-center gap-2">
+          {/* Bottom Level: Credits, Status & Back to Top */}
+          <div className="flex flex-col md:flex-row items-center justify-between w-full px-2 gap-5 md:gap-4 text-[9px] md:text-[10px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center">
+            
+            {/* Left Block: Copyright & Status */}
+            <div className="flex flex-col md:flex-row items-center justify-center gap-2.5 md:gap-2 order-1">
               <span>&copy; {new Date().getFullYear()} Hak Cipta Dilindungi</span>
               <span className="hidden md:block w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
-              <span className="flex items-center gap-1.5">
+              <span className="flex items-center justify-center gap-1.5">
                 Status: <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span></span> <span className="text-emerald-500 font-bold tracking-wider">Normal</span>
               </span>
             </div>
 
-            <div className="flex flex-wrap justify-center items-center gap-2">
+            {/* Back to Top Button: Center on PC, Bottom Pill on Mobile */}
+            <button 
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              className="group flex items-center justify-center gap-1.5 hover:text-blue-500 dark:hover:text-blue-400 transition-colors order-3 md:order-2 mt-2 md:mt-0 px-5 py-2 rounded-full bg-white dark:bg-slate-800 md:bg-transparent md:dark:bg-transparent md:px-0 md:py-0 border border-slate-200/80 dark:border-white/5 md:border-transparent shadow-sm md:shadow-none"
+            >
+              Kembali ke Atas <span className="group-hover:-translate-y-1 transition-transform duration-300">&uarr;</span>
+            </button>
+
+            {/* Right Block: Credits */}
+            <div className="flex flex-col md:flex-row items-center justify-center gap-2.5 md:gap-2 order-2 md:order-3 mt-1 md:mt-0">
               <span className="flex items-center gap-1">Powered by <span className="font-bold text-slate-600 dark:text-slate-300">Firebase & Gemini</span></span>
               <span className="hidden md:block w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
               <span className="flex items-center gap-1">Built by <span className="font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-violet-500">OPS CIBADAK</span></span>
             </div>
+            
           </div>
 
         </div>
