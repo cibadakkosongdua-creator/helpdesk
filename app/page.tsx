@@ -2,17 +2,17 @@
 
 import { usePathname, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
-import { 
-  ArrowRight, 
-  Bot, 
-  ExternalLink, 
-  Heart, 
-  LogOut, 
-  MessageCircle, 
-  Instagram, 
-  Facebook, 
-  Twitter, 
-  Youtube, 
+import {
+  ArrowRight,
+  Bot,
+  ExternalLink,
+  Heart,
+  LogOut,
+  MessageCircle,
+  Instagram,
+  Facebook,
+  Twitter,
+  Youtube,
   Github,
   Globe
 } from "lucide-react"
@@ -160,44 +160,51 @@ export default function Page() {
       <PrayerLock enabled={wellness.prayerLockEnabled} />
       <HealthToast enabled={wellness.healthToastEnabled} />
 
-      {/* Footer Links */}
-      <footer className="relative z-10 max-w-6xl mx-auto px-6 sm:px-6 lg:px-8 pb-32 md:pb-12 pt-10 border-t border-slate-200/60 dark:border-white/5">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-8 md:gap-4 text-center md:text-left">
-          <div className="flex flex-col items-center md:items-start">
-            <div className="flex items-center gap-2.5 mb-2">
-              <img src="/logo.png" alt="Logo" className="w-8 h-8 md:w-6 md:h-6 rounded-full shadow-sm" />
-              <span className="font-black text-base md:text-sm tracking-tight text-slate-800 dark:text-slate-200">SDN 02 Cibadak</span>
-            </div>
-            <div className="mt-1 flex flex-col md:flex-row items-center md:items-center justify-center md:justify-start text-center md:text-left gap-1.5 md:gap-2.5 text-[11px] md:text-[10px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-              <span>&copy; {new Date().getFullYear()} Smart Helpdesk v2.0</span>
-              <span className="hidden md:block w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600" />
-              <span className="flex items-center justify-center gap-1">
-                Powered by <span className="font-bold text-slate-500 dark:text-slate-400">Firebase &amp; Gemini</span>
-              </span>
-              <span className="hidden md:block w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600" />
-              <span className="flex items-center justify-center gap-1">
-                Developed by <span className="font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-500 to-violet-500 dark:from-blue-400 dark:via-indigo-400 dark:to-violet-400">OPS SDN 02 CIBADAK</span>
-              </span>
-            </div>
-          </div>
+      {/* Ultra-Minimalist Modern Footer */}
+      <footer className="relative z-10 max-w-4xl mx-auto px-6 pb-28 md:pb-8 pt-8 mt-10">
+        <div className="flex flex-col items-center justify-center gap-6">
           
-          <div className="flex flex-wrap justify-center md:justify-end items-center gap-3">
-            {/* WhatsApp hardcoded - utama */}
-            <FooterLink href="https://wa.me/6285156365324" label="WhatsApp" />
-            {/* Social links from settings */}
-            {socialLinks.map((link) => (
-              <FooterLink key={link.id} href={link.url} label={link.platform} />
-            ))}
+          {/* Top Level: Brand & Socials in a Capsule */}
+          <div className="flex flex-col md:flex-row items-center justify-between w-full gap-6 p-4 rounded-3xl bg-slate-50/80 dark:bg-slate-900/40 border border-slate-200/60 dark:border-white/5 shadow-sm backdrop-blur-md transition-all hover:shadow-md">
+            
+            {/* Brand Logo & Name */}
+            <div className="flex items-center gap-3 pl-2">
+              <div className="w-10 h-10 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-200/50 dark:border-white/10 flex items-center justify-center overflow-hidden group">
+                <img src="/logo.png" alt="Logo" className="w-6 h-6 group-hover:scale-110 transition-transform duration-500" />
+              </div>
+              <div className="flex flex-col">
+                <h3 className="font-bold text-sm tracking-tight text-slate-800 dark:text-slate-200">SDN 02 Cibadak</h3>
+                <p className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-0.5">Portal Layanan Terpadu</p>
+              </div>
+            </div>
+
+            {/* Social Links Dock */}
+            <div className="flex items-center gap-1 p-1.5 rounded-2xl bg-white dark:bg-slate-950 border border-slate-200/60 dark:border-white/5 shadow-sm">
+               <FooterLink href="https://wa.me/6285156365324" label="WhatsApp" />
+               {socialLinks.map((link) => (
+                 <FooterLink key={link.id} href={link.url} label={link.platform} />
+               ))}
+            </div>
           </div>
+
+          {/* Bottom Level: Credits & Status */}
+          <div className="flex flex-col md:flex-row items-center justify-between w-full px-4 gap-3 text-[10px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+            <div className="flex flex-wrap justify-center items-center gap-2">
+              <span>&copy; {new Date().getFullYear()} Hak Cipta Dilindungi</span>
+              <span className="hidden md:block w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
+              <span className="flex items-center gap-1.5">
+                Status: <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span></span> <span className="text-emerald-500 font-bold tracking-wider">Normal</span>
+              </span>
+            </div>
+
+            <div className="flex flex-wrap justify-center items-center gap-2">
+              <span className="flex items-center gap-1">Powered by <span className="font-bold text-slate-600 dark:text-slate-300">Firebase & Gemini</span></span>
+              <span className="hidden md:block w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
+              <span className="flex items-center gap-1">Built by <span className="font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-violet-500">OPS CIBADAK</span></span>
+            </div>
+          </div>
+
         </div>
-        
-        {/* Shortcut hint - only on desktop */}
-        <p className="hidden md:block text-[10px] font-medium text-slate-400/60 dark:text-slate-500/60 mt-8 text-center uppercase tracking-widest">
-          Tekan <kbd className="mx-1 rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 px-1.5 py-0.5 font-mono text-[10px] text-slate-600 dark:text-slate-400 shadow-sm">Ctrl</kbd>
-          +
-          <kbd className="mx-1 rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 px-1.5 py-0.5 font-mono text-[10px] text-slate-600 dark:text-slate-400 shadow-sm">K</kbd>
-          untuk pencarian perintah
-        </p>
       </footer>
 
       {/* Logout Confirmation Dialog */}
@@ -246,41 +253,41 @@ export default function Page() {
 function FooterLink({ href, label }: { href: string; label: string }) {
   const getBrandConfig = () => {
     const l = label.toLowerCase()
-    if (l.includes("whatsapp")) return { 
-      icon: <MessageCircle className="w-4 h-4" />, 
-      color: "hover:text-green-500 hover:bg-green-50 dark:hover:bg-green-500/10 hover:border-green-200" 
+    if (l.includes("whatsapp")) return {
+      icon: <MessageCircle className="w-4 h-4" />,
+      color: "text-slate-400 hover:text-green-500 hover:bg-green-50 dark:hover:bg-green-500/10"
     }
-    if (l.includes("instagram")) return { 
-      icon: <Instagram className="w-4 h-4" />, 
-      color: "hover:text-pink-500 hover:bg-pink-50 dark:hover:bg-pink-500/10 hover:border-pink-200" 
+    if (l.includes("instagram")) return {
+      icon: <Instagram className="w-4 h-4" />,
+      color: "text-slate-400 hover:text-pink-500 hover:bg-pink-50 dark:hover:bg-pink-500/10"
     }
-    if (l.includes("facebook")) return { 
-      icon: <Facebook className="w-4 h-4" />, 
-      color: "hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-600/10 hover:border-blue-200" 
+    if (l.includes("facebook")) return {
+      icon: <Facebook className="w-4 h-4" />,
+      color: "text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-600/10"
     }
-    if (l.includes("twitter") || l.includes("x")) return { 
-      icon: <Twitter className="w-4 h-4" />, 
-      color: "hover:text-sky-500 hover:bg-sky-50 dark:hover:bg-sky-500/10 hover:border-sky-200" 
+    if (l.includes("twitter") || l.includes("x")) return {
+      icon: <Twitter className="w-4 h-4" />,
+      color: "text-slate-400 hover:text-sky-500 hover:bg-sky-50 dark:hover:bg-sky-500/10"
     }
-    if (l.includes("youtube")) return { 
-      icon: <Youtube className="w-4 h-4" />, 
-      color: "hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 hover:border-red-200" 
+    if (l.includes("youtube")) return {
+      icon: <Youtube className="w-4 h-4" />,
+      color: "text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10"
     }
-    if (l.includes("tiktok")) return { 
+    if (l.includes("tiktok")) return {
       icon: (
         <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
           <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.06 3.43-.01 6.85-.04 10.27-.01 1.35-.35 2.77-1.13 3.88-.95 1.45-2.58 2.37-4.32 2.65-1.87.35-3.9-.06-5.41-1.22-1.61-1.21-2.48-3.28-2.22-5.27.21-1.72 1.17-3.34 2.63-4.23 1.25-.79 2.78-1.12 4.24-.96v4.02c-.63-.12-1.3-.08-1.9.15-.81.3-1.46.96-1.74 1.76-.36.9-.2 1.99.4 2.75.56.74 1.48 1.15 2.41 1.05.95-.06 1.83-.67 2.24-1.52.33-.65.4-1.39.38-2.11V0z" />
         </svg>
-      ), 
-      color: "hover:text-black dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 hover:border-slate-300" 
+      ),
+      color: "text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10"
     }
-    if (l.includes("github")) return { 
-      icon: <Github className="w-4 h-4" />, 
-      color: "hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 hover:border-slate-300" 
+    if (l.includes("github")) return {
+      icon: <Github className="w-4 h-4" />,
+      color: "text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10"
     }
-    return { 
-      icon: <Globe className="w-4 h-4" />, 
-      color: "hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:border-blue-200" 
+    return {
+      icon: <Globe className="w-4 h-4" />,
+      color: "text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10"
     }
   }
 
@@ -291,11 +298,10 @@ function FooterLink({ href, label }: { href: string; label: string }) {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className={`inline-flex items-center justify-center gap-2 w-10 h-10 md:w-auto md:h-auto p-0 md:px-3 md:py-1.5 rounded-full bg-white dark:bg-white/5 border border-slate-200/60 dark:border-white/10 text-[11px] font-bold text-slate-500 dark:text-slate-400 transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5 active:scale-95 ${brand.color}`}
+      className={`flex items-center justify-center w-8 h-8 rounded-xl transition-all duration-300 hover:scale-110 active:scale-95 ${brand.color}`}
       title={label}
     >
       {brand.icon}
-      <span className="hidden md:inline">{label}</span>
     </a>
   )
 }
