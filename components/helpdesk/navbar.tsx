@@ -104,7 +104,7 @@ export function Navbar({
           className="flex items-center gap-3 px-4 mr-2 cursor-pointer group"
         >
           <img src="/logo.png" alt="Logo" className={`w-9 h-9 rounded-full object-cover transition-all duration-500 ${scrolled ? "shadow-inner" : "shadow-none"}`} />
-          <span className={`font-bold tracking-tight transition-colors duration-500 ${scrolled ? "text-slate-900 dark:text-white" : "text-slate-900 dark:text-white"}`}>Helpdesk</span>
+          <span className={`font-black tracking-tighter text-xl transition-colors duration-500 ${scrolled ? "text-slate-900 dark:text-white" : "text-slate-900 dark:text-white"}`}>HELPDESK</span>
         </button>
 
         {/* Divider */}

@@ -9,7 +9,8 @@ import {
   User,
   X,
 } from "lucide-react"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
+import { createPortal } from "react-dom"
 import { SERVICES } from "@/lib/helpdesk/data"
 import {
   markTicketRead,
@@ -48,9 +49,14 @@ export function TicketDetailDialog({
   adminName: string
   showToast: ShowToastFn
 }) {
+  const [mounted, setMounted] = useState(false)
+
   useEffect(() => {
+    setMounted(true)
     void markTicketRead(ticket.id, "admin")
   }, [ticket.id])
+
+  if (!mounted) return null
 
   const service = SERVICES.find((s) => s.id === ticket.service)
 
@@ -63,79 +69,82 @@ export function TicketDetailDialog({
     }
   }
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-[120] bg-slate-950/60 backdrop-blur-sm animate-in fade-in duration-200 flex items-center justify-center p-4"
+      className="fixed inset-0 z-[120] flex items-center justify-center"
       role="dialog"
       aria-modal="true"
-      onClick={onClose}
     >
+      <div 
+        className="fixed inset-0 bg-slate-950/40 dark:bg-slate-950/60 backdrop-blur-md animate-in fade-in duration-300" 
+        onClick={onClose}
+      />
       <div
-        className="relative w-full md:w-[720px] bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/10 rounded-[2rem] shadow-2xl flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-300"
+        className="relative w-full md:w-[720px] m-4 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/10 rounded-[2rem] shadow-2xl flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-300"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="shrink-0 flex items-start justify-between gap-4 p-5 md:p-6 border-b border-slate-200/60 dark:border-white/5 bg-white dark:bg-slate-900 rounded-t-[2rem]">
-              <div className="min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-mono text-lg md:text-xl font-extrabold tracking-widest text-slate-900 dark:text-white">
-                    {ticket.code}
-                  </span>
-                  <button
-                    onClick={handleCopy}
-                    className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-[10px] font-bold transition-colors"
-                    aria-label="Salin link pelacakan"
-                  >
-                    <Copy className="w-3 h-3" /> Salin Link
-                  </button>
-                  <a
-                    href={`/tiket/${ticket.code}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-300 text-[10px] font-bold hover:bg-blue-100 dark:hover:bg-blue-500/20 transition-colors"
-                  >
-                    <ExternalLink className="w-3 h-3" /> Tampilan Publik
-                  </a>
-                </div>
-                <div className="flex flex-wrap items-center gap-3 mt-2 text-xs text-slate-500 dark:text-slate-400">
-                  <span className="inline-flex items-center gap-1.5">
-                    <User className="w-3 h-3" />
-                    <b className="text-slate-700 dark:text-slate-200">{ticket.name}</b> · {ticket.role}
-                  </span>
-                  <span className="inline-flex items-center gap-1.5">
-                    <Clock className="w-3 h-3" />
-                    {new Date(ticket.createdAt).toLocaleString("id-ID")}
-                  </span>
-                </div>
-              </div>
-              <div className="shrink-0 flex items-center gap-1">
-                {onDelete && (
-                  <ConfirmDialog
-                    title="Hapus Tiket?"
-                    description={`Tiket ${ticket.code} akan dihapus secara permanen beserta seluruh balasan. Tindakan ini tidak dapat dibatalkan.`}
-                    confirmLabel="Hapus Tiket"
-                    onConfirm={() => onDelete(ticket.id)}
-                  >
-                    <button
-                      className="p-2 rounded-full hover:bg-red-50 dark:hover:bg-red-500/10 text-red-500 transition-colors"
-                      aria-label="Hapus tiket"
-                    >
-                      <Trash2 className="w-5 h-5" />
-                    </button>
-                  </ConfirmDialog>
-                )}
-                <button
-                  onClick={onClose}
-                  className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500"
-                  aria-label="Tutup"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-mono text-lg md:text-xl font-extrabold tracking-widest text-slate-900 dark:text-white">
+                {ticket.code}
+              </span>
+              <button
+                onClick={handleCopy}
+                className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-[10px] font-bold transition-colors"
+                aria-label="Salin link pelacakan"
+              >
+                <Copy className="w-3 h-3" /> Salin Link
+              </button>
+              <a
+                href={`/tiket/${ticket.code}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-300 text-[10px] font-bold hover:bg-blue-100 dark:hover:bg-blue-500/20 transition-colors"
+              >
+                <ExternalLink className="w-3 h-3" /> Tampilan Publik
+              </a>
             </div>
+            <div className="flex flex-wrap items-center gap-3 mt-2 text-xs text-slate-500 dark:text-slate-400">
+              <span className="inline-flex items-center gap-1.5">
+                <User className="w-3 h-3" />
+                <b className="text-slate-700 dark:text-slate-200">{ticket.name}</b> · {ticket.role}
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <Clock className="w-3 h-3" />
+                {new Date(ticket.createdAt).toLocaleString("id-ID")}
+              </span>
+            </div>
+          </div>
+          <div className="shrink-0 flex items-center gap-1">
+            {onDelete && (
+              <ConfirmDialog
+                title="Hapus Tiket?"
+                description={`Tiket ${ticket.code} akan dihapus secara permanen beserta seluruh balasan. Tindakan ini tidak dapat dibatalkan.`}
+                confirmLabel="Hapus Tiket"
+                onConfirm={() => onDelete(ticket.id)}
+              >
+                <button
+                  className="p-2 rounded-full hover:bg-red-50 dark:hover:bg-red-500/10 text-red-500 transition-colors"
+                  aria-label="Hapus tiket"
+                >
+                  <Trash2 className="w-5 h-5" />
+                </button>
+              </ConfirmDialog>
+            )}
+            <button
+              onClick={onClose}
+              className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500"
+              aria-label="Tutup"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
 
-            {/* Body */}
-            <div className="flex-1 overflow-y-auto p-5 md:p-6 space-y-5">
+        {/* Body */}
+        <div className="flex-1 overflow-y-auto p-5 md:p-6 space-y-5">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <MetaSelect
               label="Status"
@@ -208,7 +217,8 @@ export function TicketDetailDialog({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 

@@ -140,63 +140,48 @@ export function ChatWidget() {
   const suggestions = ["Cara pinjam buku?", "Lupa password", "Cek nilai rapor", "Jam sekolah?"]
 
   return (
-    <div className="fixed bottom-24 md:bottom-8 right-4 md:right-8 z-[90] flex flex-col items-end">
+    <div className="fixed bottom-24 md:bottom-8 right-4 md:right-8 z-[100] flex flex-col items-end">
       {isOpen && (
-        <div className="mb-4 w-[calc(100vw-2rem)] md:w-[400px] h-[500px] max-h-[75vh] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-300 origin-bottom-right">
-          {/* Header - Gradient Glow */}
-          <div className="relative px-5 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white overflow-hidden">
-            {/* Animated Glow Background */}
-            <div className="absolute inset-0">
-              <div className="absolute top-0 left-1/4 w-32 h-32 bg-blue-400 rounded-full blur-3xl opacity-30 animate-pulse" />
-              <div className="absolute bottom-0 right-1/4 w-24 h-24 bg-indigo-400 rounded-full blur-2xl opacity-30 animate-pulse" style={{ animationDelay: "1s" }} />
-            </div>
-            
-            <div className="relative flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <div className="w-11 h-11 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30">
-                    <Bot className="w-6 h-6 text-white" />
-                  </div>
-                  <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-400 border-2 border-blue-600 rounded-full" />
+        <div className="mb-6 w-[calc(100vw-2rem)] md:w-[420px] h-[600px] max-h-[80vh] bg-white/80 dark:bg-slate-950/80 backdrop-blur-2xl border border-white/20 dark:border-white/5 rounded-[2.5rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 slide-in-from-bottom-10 duration-500 origin-bottom-right">
+          {/* Minimalist Glass Header */}
+          <div className="px-6 py-5 border-b border-black/5 dark:border-white/5 flex items-center justify-between bg-white/20 dark:bg-white/5">
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 via-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                  <Bot className="w-7 h-7 text-white animate-neural-glow" />
                 </div>
-                <div>
-                  <h3 className="font-bold text-base">Asisten AI</h3>
-                  <div className="flex items-center gap-1 text-blue-100 text-xs">
-                    <Zap className="w-3 h-3" />
-                    <span>Gemini AI</span>
-                  </div>
+                <div className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-white dark:border-slate-950 rounded-full" />
+              </div>
+              <div>
+                <h3 className="text-lg font-black tracking-tight text-slate-900 dark:text-white">Neural Assistant</h3>
+                <div className="flex items-center gap-1.5 text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">
+                  <span className="w-1.5 h-1.5 bg-blue-600 dark:bg-blue-400 rounded-full animate-pulse" />
+                  Live & Intelligent
                 </div>
               </div>
-              <button
-                onClick={() => setIsOpen(false)}
-                className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
-                aria-label="Tutup chat"
-              >
-                <Minus className="w-4 h-4" />
-              </button>
             </div>
-            
-            {/* School Badge */}
-            <div className="mt-3 inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-sm rounded-full border border-white/20 text-xs">
-              <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-              SDN 02 Cibadak
-            </div>
+            <button
+              onClick={() => setIsOpen(false)}
+              className="p-2.5 rounded-2xl bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400 transition-all active:scale-90"
+            >
+              <Minus className="w-5 h-5" />
+            </button>
           </div>
 
-          {/* Messages */}
-          <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3 scroll-smooth bg-slate-50 dark:bg-slate-900">
+          {/* Messages Area */}
+          <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-6 scroll-smooth">
             {messages.map((msg, i) => (
-              <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+              <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} animate-in fade-in slide-in-from-bottom-2 duration-300`}>
                 {msg.role === "ai" && (
-                  <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center mr-2 flex-shrink-0">
-                    <Bot className="w-3.5 h-3.5 text-white" />
+                  <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-white/10 flex items-center justify-center mr-3 flex-shrink-0 mt-1">
+                    <Sparkles className="w-4 h-4 text-blue-500" />
                   </div>
                 )}
                 <div
-                  className={`max-w-[80%] px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap ${
+                  className={`max-w-[85%] px-5 py-3.5 text-sm leading-relaxed shadow-sm ${
                     msg.role === "user"
-                      ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl rounded-br-md"
-                      : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-2xl rounded-bl-md border border-slate-200 dark:border-slate-700"
+                      ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-[1.5rem] rounded-tr-none font-medium"
+                      : "bg-white dark:bg-white/5 text-slate-700 dark:text-slate-200 rounded-[1.5rem] rounded-tl-none border border-black/5 dark:border-white/10"
                   }`}
                 >
                   {msg.text}
@@ -204,115 +189,79 @@ export function ChatWidget() {
               </div>
             ))}
             {isLoading && (
-              <div className="flex items-start">
-                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center mr-2">
-                  <Bot className="w-3.5 h-3.5 text-white" />
+              <div className="flex items-start animate-pulse">
+                <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-white/10 flex items-center justify-center mr-3 flex-shrink-0">
+                  <Bot className="w-4 h-4 text-blue-500" />
                 </div>
-                <div className="bg-white dark:bg-slate-800 px-4 py-3 rounded-2xl rounded-bl-md border border-slate-200 dark:border-slate-700">
-                  <div className="flex items-center gap-2">
-                    <div className="flex gap-1">
-                      <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" />
-                      <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                      <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
-                    </div>
-                    <span className="text-xs text-slate-500">berpikir...</span>
+                <div className="bg-white dark:bg-white/5 px-5 py-4 rounded-[1.5rem] rounded-tl-none border border-black/5 dark:border-white/10">
+                  <div className="flex gap-1.5">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" />
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce [animation-delay:0.2s]" />
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce [animation-delay:0.4s]" />
                   </div>
                 </div>
               </div>
             )}
-            
-            {/* Suggestions */}
+          </div>
+
+          {/* Bottom Controls */}
+          <div className="p-6 pt-0 bg-transparent">
+            {/* Quick Actions Chips */}
             {messages.length <= 2 && !isLoading && (
-              <div className="pt-2 space-y-2">
-                <p className="text-xs text-slate-500 font-medium">Pertanyaan populer:</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {suggestions.map((s) => (
-                    <button
-                      key={s}
-                      onClick={() => setInput(s)}
-                      className="group flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 border border-slate-200 dark:border-slate-700 transition-all"
-                    >
-                      {s}
-                      <ArrowRight className="w-3 h-3 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
-                    </button>
-                  ))}
-                </div>
+              <div className="mb-4 flex flex-wrap gap-2">
+                {suggestions.map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => setInput(s)}
+                    className="px-4 py-2 text-[11px] font-bold uppercase tracking-wider bg-white dark:bg-white/5 border border-black/5 dark:border-white/10 text-slate-600 dark:text-slate-400 rounded-full hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white transition-all duration-300 active:scale-95"
+                  >
+                    {s}
+                  </button>
+                ))}
               </div>
             )}
-          </div>
 
-          {/* Quick Actions */}
-          <div className="px-4 pb-3 pt-2 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
-            <div className="flex gap-2">
-              <button
-                onClick={handleCreateTicket}
-                className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg bg-gradient-to-r from-emerald-500 to-green-600 text-white hover:from-emerald-400 hover:to-green-500 transition-all"
-              >
-                <PlusCircle className="w-3.5 h-3.5" />
-                Buat Tiket
-              </button>
-              <button
-                onClick={handleTrackTicket}
-                className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg bg-gradient-to-r from-amber-500 to-orange-600 text-white hover:from-amber-400 hover:to-orange-500 transition-all"
-              >
-                <Search className="w-3.5 h-3.5" />
-                Lacak
-              </button>
-              <button
-                onClick={handleTalkToHuman}
-                className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg bg-gradient-to-r from-slate-600 to-slate-700 text-white hover:from-slate-500 hover:to-slate-600 transition-all"
-              >
-                <User className="w-3.5 h-3.5" />
-                Admin
-              </button>
-            </div>
+            {/* Floating Pill Input */}
+            <form onSubmit={handleSend} className="relative group">
+              <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-violet-600 rounded-[2rem] opacity-20 group-focus-within:opacity-40 blur-md transition-opacity" />
+              <div className="relative flex items-center bg-slate-100 dark:bg-white/10 rounded-[2rem] p-1.5 border border-black/5 dark:border-white/5">
+                <input
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder="Ask me anything..."
+                  className="flex-1 bg-transparent px-5 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none"
+                />
+                <button
+                  type="submit"
+                  disabled={!input.trim() || isLoading}
+                  className="w-10 h-10 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 flex items-center justify-center hover:scale-105 active:scale-90 transition-all disabled:opacity-30"
+                >
+                  <ArrowRight className="w-5 h-5" />
+                </button>
+              </div>
+            </form>
           </div>
-
-          {/* Input */}
-          <form
-            onSubmit={handleSend}
-            className="p-4 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700"
-          >
-            <div className="relative flex items-center">
-              <input
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Ketik pertanyaan..."
-                className="w-full bg-slate-100 dark:bg-slate-800 rounded-xl pl-4 pr-12 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
-              />
-              <button
-                type="submit"
-                disabled={!input.trim() || isLoading}
-                className="absolute right-1.5 p-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-500 hover:to-indigo-500 active:scale-95 transition-all disabled:opacity-50"
-                aria-label="Kirim"
-              >
-                <Send className="w-4 h-4" />
-              </button>
-            </div>
-          </form>
         </div>
       )}
 
-      {/* Proactive Message Popup */}
+      {/* Proactive Popup - Minimal Glass Card */}
       {!isOpen && showProactive && (
-        <div className="mb-3 max-w-[280px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl p-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
-          <div className="flex items-start gap-3">
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white flex-shrink-0">
-              <Bot className="w-4 h-4" />
+        <div className="mb-6 mr-2 relative animate-in fade-in slide-in-from-right-10 duration-700">
+          <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-white dark:border-white/10 px-6 py-4 rounded-[2rem] shadow-[0_20px_40px_rgba(0,0,0,0.15)] flex items-center gap-4 group">
+            <div className="w-10 h-10 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
+              <Bot className="w-5 h-5 animate-pulse" />
             </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
-                Ada yang bisa dibantu?
-              </p>
-              <p className="text-xs text-slate-500 mt-0.5">Klik untuk chat dengan AI</p>
+            <div>
+              <p className="text-sm font-black text-slate-900 dark:text-white leading-none mb-1">Neural Assistant</p>
+              <p className="text-xs text-slate-500 font-medium">I'm ready to help you.</p>
             </div>
             <button
               onClick={() => {
                 setShowProactive(false)
                 localStorage.setItem("helpdesk_proactive_seen", "true")
               }}
-              className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-0.5"
+              className="p-1 text-slate-400 hover:text-slate-600 transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
@@ -320,7 +269,7 @@ export function ChatWidget() {
         </div>
       )}
 
-      {/* FAB Button - Gradient Glow */}
+      {/* Neural Glass Orb FAB */}
       {!isOpen && (
         <button
           onClick={() => {
@@ -328,25 +277,28 @@ export function ChatWidget() {
             setShowProactive(false)
             localStorage.setItem("helpdesk_proactive_seen", "true")
           }}
-          className="group relative flex items-center justify-center w-14 h-14 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 hover:scale-105 active:scale-95 transition-all duration-300 animate-in zoom-in"
-          aria-label="Buka asisten AI"
+          className="relative w-20 h-20 group transition-all duration-500 hover:scale-110 active:scale-95"
         >
-          {/* Animated Glow Ring */}
-          <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-500 opacity-0 group-hover:opacity-100 blur-md transition-opacity duration-300 -z-10 scale-110" />
+          {/* Animated Glow Layers */}
+          <div className="absolute inset-0 bg-blue-500 rounded-full blur-2xl opacity-20 group-hover:opacity-40 animate-pulse-soft" />
+          <div className="absolute inset-2 bg-gradient-to-tr from-blue-600 via-indigo-600 to-violet-600 rounded-full opacity-10 animate-spin-slow" />
           
-          {/* Pulse Ring */}
-          <div className="absolute inset-0 rounded-xl border-2 border-blue-400 opacity-0 group-hover:animate-ping" />
-          
-          {/* Sparkle */}
-          <Sparkles className="absolute -top-1 -right-1 w-3.5 h-3.5 text-yellow-400 animate-pulse" />
-          
-          {/* Main Icon */}
-          <MessageCircle className="w-6 h-6 text-white group-hover:rotate-12 transition-transform duration-300" />
-          
-          {/* AI Badge */}
-          <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 px-1.5 py-0.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-[9px] font-bold rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
-            AI
-          </span>
+          {/* Glass Orb */}
+          <div className="absolute inset-0 bg-white/10 dark:bg-white/5 backdrop-blur-xl border border-white/30 dark:border-white/10 rounded-full shadow-[inset_0_2px_4px_rgba(255,255,255,0.3),0_10px_30px_rgba(0,0,0,0.2)] flex items-center justify-center overflow-hidden">
+            {/* Gloss Effect */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-1/4 bg-gradient-to-b from-white/40 to-transparent rounded-full" />
+            
+            {/* Central Neural Icon */}
+            <div className="relative z-10 w-12 h-12 rounded-full bg-slate-900 dark:bg-white flex items-center justify-center shadow-inner">
+              <Bot className="w-6 h-6 text-white dark:text-slate-900 group-hover:scale-110 transition-transform duration-500" />
+            </div>
+
+            {/* Scanning Light */}
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-400/20 to-transparent -translate-y-full group-hover:animate-[shimmer_2s_infinite]" />
+          </div>
+
+          {/* Outer Neural Ring */}
+          <div className="absolute inset-[-4px] border-2 border-dashed border-blue-500/30 rounded-full animate-spin-slow group-hover:border-blue-500/60" />
         </button>
       )}
     </div>
