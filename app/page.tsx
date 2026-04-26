@@ -2,7 +2,20 @@
 
 import { usePathname, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
-import { ExternalLink, LogOut, X } from "lucide-react"
+import { 
+  ArrowRight, 
+  Bot, 
+  ExternalLink, 
+  Heart, 
+  LogOut, 
+  MessageCircle, 
+  Instagram, 
+  Facebook, 
+  Twitter, 
+  Youtube, 
+  Github,
+  Globe
+} from "lucide-react"
 import { AdminDashboard } from "@/components/helpdesk/admin-dashboard"
 import { AdminLogin } from "@/components/helpdesk/admin-login"
 import { ChatWidget } from "@/components/helpdesk/chat-widget"
@@ -223,15 +236,27 @@ export default function Page() {
 }
 
 function FooterLink({ href, label }: { href: string; label: string }) {
+  const getIcon = () => {
+    const l = label.toLowerCase()
+    if (l.includes("whatsapp")) return <MessageCircle className="w-4 h-4" />
+    if (l.includes("instagram")) return <Instagram className="w-4 h-4" />
+    if (l.includes("facebook")) return <Facebook className="w-4 h-4" />
+    if (l.includes("twitter") || l.includes("x")) return <Twitter className="w-4 h-4" />
+    if (l.includes("youtube")) return <Youtube className="w-4 h-4" />
+    if (l.includes("github")) return <Github className="w-4 h-4" />
+    return <ExternalLink className="w-4 h-4" />
+  }
+
   return (
     <a
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-white/5 border border-slate-200/60 dark:border-white/10 text-[11px] font-bold text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-300 dark:hover:border-blue-500/30 transition-all"
+      className="inline-flex items-center justify-center gap-2 p-2.5 md:px-3 md:py-1.5 rounded-full bg-slate-100 dark:bg-white/5 border border-slate-200/60 dark:border-white/10 text-[11px] font-bold text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-300 dark:hover:border-blue-500/30 transition-all shadow-sm md:shadow-none"
+      title={label}
     >
-      <ExternalLink className="w-3 h-3" />
-      {label}
+      {getIcon()}
+      <span className="hidden md:inline">{label}</span>
     </a>
   )
 }
