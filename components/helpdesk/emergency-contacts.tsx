@@ -18,7 +18,7 @@ export default function EmergencyContacts() {
   return (
     <section
       aria-labelledby="emergency-title"
-      className="relative rounded-3xl border border-red-200/70 dark:border-red-900/50 bg-red-50/60 dark:bg-red-950/30 backdrop-blur-md p-6 shadow-sm overflow-hidden"
+      className="relative rounded-2xl border border-red-200/70 dark:border-red-900/50 bg-red-50/60 dark:bg-red-950/30 backdrop-blur-md p-6 shadow-sm overflow-hidden"
     >
       {/* Subtle ambient glow */}
       <div className="absolute -top-10 -right-10 w-40 h-40 bg-red-500/10 rounded-full blur-3xl pointer-events-none" />

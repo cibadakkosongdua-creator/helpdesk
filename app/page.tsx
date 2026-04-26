@@ -168,9 +168,17 @@ export default function Page() {
               <img src="/logo.png" alt="Logo" className="w-8 h-8 md:w-6 md:h-6 rounded-full shadow-sm" />
               <span className="font-black text-base md:text-sm tracking-tight text-slate-800 dark:text-slate-200">SDN 02 Cibadak</span>
             </div>
-            <p className="text-[11px] md:text-[10px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-              &copy; {new Date().getFullYear()} Smart Helpdesk v2.0 &middot; Firebase &amp; Gemini AI
-            </p>
+            <div className="mt-1 flex flex-col md:flex-row items-center md:items-center justify-center md:justify-start text-center md:text-left gap-1.5 md:gap-2.5 text-[11px] md:text-[10px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+              <span>&copy; {new Date().getFullYear()} Smart Helpdesk v2.0</span>
+              <span className="hidden md:block w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600" />
+              <span className="flex items-center justify-center gap-1">
+                Powered by <span className="font-bold text-slate-500 dark:text-slate-400">Firebase &amp; Gemini</span>
+              </span>
+              <span className="hidden md:block w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600" />
+              <span className="flex items-center justify-center gap-1">
+                Developed by <span className="font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-500 to-violet-500 dark:from-blue-400 dark:via-indigo-400 dark:to-violet-400">OPS SDN 02 CIBADAK</span>
+              </span>
+            </div>
           </div>
           
           <div className="flex flex-wrap justify-center md:justify-end items-center gap-3">

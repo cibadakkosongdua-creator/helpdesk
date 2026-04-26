@@ -147,7 +147,7 @@ export function SurveyView({ showToast, user }: { showToast: ShowToastFn; user: 
           <label className="text-xs font-semibold tracking-wide text-slate-700 dark:text-slate-300 uppercase ml-1 block">
             Tingkat Kepuasan Anda
           </label>
-          <div className="flex flex-col items-center gap-3 bg-slate-50 dark:bg-slate-950/60 border border-slate-200/60 dark:border-white/5 rounded-3xl py-6 md:py-8 shadow-inner">
+          <div className="flex flex-col items-center gap-3 bg-slate-50 dark:bg-slate-950/60 border border-slate-200/60 dark:border-white/5 rounded-2xl py-6 md:py-8 shadow-inner">
             <div className="flex items-center gap-1.5 md:gap-2">
               {[1, 2, 3, 4, 5].map((star) => (
                 <button
@@ -157,7 +157,7 @@ export function SurveyView({ showToast, user }: { showToast: ShowToastFn; user: 
                   onMouseLeave={() => setHoverRating(0)}
                   onClick={() => setRating(star)}
                   aria-label={`Rating ${star}`}
-                  className="p-1 rounded-full transition-transform active:scale-90"
+                  className="p-1 rounded-full transition-all duration-200 hover:scale-125 active:scale-90"
                 >
                   <Star
                     className={`w-10 h-10 md:w-12 md:h-12 transition-all duration-300 ${

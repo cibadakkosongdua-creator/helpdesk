@@ -129,8 +129,9 @@ export function TicketTrack({ code }: { code: string }) {
                   <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight font-mono">
                     {ticket.code}
                   </h1>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                    Dibuat {new Date(ticket.createdAt).toLocaleString("id-ID")}
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5" />
+                    <ElapsedTime createdAt={ticket.createdAt} />
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -313,11 +314,24 @@ function StatusTimeline({
     },
   ]
   const currentIdx = steps.findIndex((s) => s.key === status)
+  const progressPct = status === "Open" ? 25 : status === "In Progress" ? 65 : 100
+  const progressColor = status === "Open" ? "bg-amber-500" : status === "In Progress" ? "bg-blue-500" : "bg-emerald-500"
+
   return (
     <div className="bg-white dark:bg-slate-900/40 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 rounded-[2rem] p-5 md:p-6 shadow-sm">
-      <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-5">
-        Progres Penanganan
-      </p>
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+          Progres Penanganan
+        </p>
+        <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">{progressPct}%</span>
+      </div>
+      {/* Progress Bar */}
+      <div className="w-full h-2 bg-slate-100 dark:bg-white/5 rounded-full mb-5 overflow-hidden">
+        <div
+          className={`h-full rounded-full transition-all duration-1000 ease-out ${progressColor}`}
+          style={{ width: `${progressPct}%` }}
+        />
+      </div>
       <ol className="flex items-start gap-2">
         {steps.map((s, i) => {
           const done = i <= currentIdx
@@ -450,7 +464,7 @@ function TicketRating({ ticket }: { ticket: Ticket }) {
             onMouseEnter={() => setHover(star)}
             onMouseLeave={() => setHover(0)}
             onClick={() => setSelected(star)}
-            className="p-1 rounded-lg hover:bg-amber-50 dark:hover:bg-amber-500/10 transition-colors"
+            className="p-1 rounded-xl hover:bg-amber-50 dark:hover:bg-amber-500/10 hover:scale-125 active:scale-95 transition-all duration-200"
           >
             <Star
               className={`w-8 h-8 transition-all duration-200 ${
@@ -494,4 +508,34 @@ function TicketRating({ ticket }: { ticket: Ticket }) {
       )}
     </div>
   )
+}
+
+function ElapsedTime({ createdAt }: { createdAt: number }) {
+  const [, setTick] = useState(0)
+
+  useEffect(() => {
+    const interval = setInterval(() => setTick((t) => t + 1), 60000)
+    return () => clearInterval(interval)
+  }, [])
+
+  const diffMs = Date.now() - createdAt
+  const diffMins = Math.floor(diffMs / 60000)
+  const diffHours = Math.floor(diffMins / 60)
+  const diffDays = Math.floor(diffHours / 24)
+
+  let label: string
+  const dateStr = new Date(createdAt).toLocaleString("id-ID", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  })
+
+  if (diffMins < 1) label = "Baru saja dibuat"
+  else if (diffMins < 60) label = `${diffMins} menit lalu`
+  else if (diffHours < 24) label = `${diffHours} jam ${diffMins % 60} menit lalu`
+  else label = `${diffDays} hari lalu — ${dateStr}`
+
+  return <span title={dateStr}>{label}</span>
 }

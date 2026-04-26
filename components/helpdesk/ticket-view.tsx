@@ -50,6 +50,8 @@ const DEPARTMENTS: Department[] = [
   "Kepala Sekolah",
 ]
 
+const DRAFT_KEY = "helpdesk_ticket_draft"
+
 export function TicketView({
   showToast,
   onTrackTicket,
@@ -69,18 +71,36 @@ export function TicketView({
   const [copied, setCopied] = useState(false)
   const [myTickets, setMyTickets] = useState<Ticket[]>([])
 
-  const [formData, setFormData] = useState({
-    name: "",
-    role: "Siswa",
-    service: "perpus",
-    details: "",
-    priority: "Sedang" as TicketPriority,
-    department: "IT" as Department,
-    attachments: [] as Attachment[],
-    // honeypot - must stay empty
-    website: "",
+  const [formData, setFormData] = useState(() => {
+    try {
+      const saved = typeof window !== "undefined" ? localStorage.getItem(DRAFT_KEY) : null
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        return {
+          name: "",
+          role: parsed.role ?? "Siswa",
+          service: parsed.service ?? "perpus",
+          details: parsed.details ?? "",
+          priority: parsed.priority ?? "Sedang" as TicketPriority,
+          department: parsed.department ?? "IT" as Department,
+          attachments: [] as Attachment[],
+          website: "",
+        }
+      }
+    } catch { /* ignore */ }
+    return {
+      name: "",
+      role: "Siswa",
+      service: "perpus",
+      details: "",
+      priority: "Sedang" as TicketPriority,
+      department: "IT" as Department,
+      attachments: [] as Attachment[],
+      website: "",
+    }
   })
   const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([])
+  const [draftSaved, setDraftSaved] = useState(false)
 
   // Auto-fill name when user logs in
   useEffect(() => {
@@ -88,6 +108,25 @@ export function TicketView({
       setFormData((prev) => ({ ...prev, name: user.name }))
     }
   }, [user])
+
+  // Auto-save draft every 30 seconds
+  useEffect(() => {
+    if (!formData.details && !formData.service) return
+    const interval = setInterval(() => {
+      try {
+        localStorage.setItem(DRAFT_KEY, JSON.stringify({
+          role: formData.role,
+          service: formData.service,
+          details: formData.details,
+          priority: formData.priority,
+          department: formData.department,
+        }))
+        setDraftSaved(true)
+        setTimeout(() => setDraftSaved(false), 2000)
+      } catch { /* ignore */ }
+    }, 30000)
+    return () => clearInterval(interval)
+  }, [formData])
 
   // Subscribe to user's tickets
   useEffect(() => {
@@ -194,6 +233,7 @@ export function TicketView({
       setCreated(saved)
       try {
         localStorage.setItem("helpdesk_last_ticket", JSON.stringify({ code: saved.code, status: saved.status }))
+        localStorage.removeItem(DRAFT_KEY)
       } catch {}
       if (navigator.vibrate) navigator.vibrate([10, 40, 10])
     } catch (err: any) {
@@ -361,9 +401,16 @@ export function TicketView({
   return (
     <div className="w-full max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-700">
       <div className="mb-8 md:mb-10">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-500/10 border border-blue-200/60 dark:border-blue-500/20 text-blue-600 dark:text-blue-400 text-xs font-semibold tracking-wide uppercase mb-4">
-          <TicketIcon className="w-3.5 h-3.5" />
-          <span>Helpdesk &middot; Tiket Bantuan</span>
+        <div className="flex items-center gap-2 mb-4 flex-wrap">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-500/10 border border-blue-200/60 dark:border-blue-500/20 text-blue-600 dark:text-blue-400 text-xs font-semibold tracking-wide uppercase">
+            <TicketIcon className="w-3.5 h-3.5" />
+            <span>Helpdesk &middot; Tiket Bantuan</span>
+          </div>
+          {draftSaved && (
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200/60 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold animate-in fade-in duration-300">
+              ✓ Draft tersimpan
+            </span>
+          )}
         </div>
         <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white text-balance">
           Lapor Kendala

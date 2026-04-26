@@ -288,7 +288,7 @@ export function ReplyThread({
                   setText(qr)
                   handleTyping()
                 }}
-                className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 text-xs font-medium hover:bg-slate-200 dark:hover:bg-white/10 hover:scale-105 active:scale-95 transition-all"
+                className="px-2.5 py-1 rounded-xl bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 text-xs font-medium hover:bg-slate-200 dark:hover:bg-white/10 hover:scale-105 active:scale-95 transition-all"
               >
                 {qr}
               </button>
@@ -323,13 +323,13 @@ export function ReplyThread({
                   <button
                     type="button"
                     onClick={() => setShowTemplates(!showTemplates)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 text-xs font-bold hover:bg-slate-200 dark:hover:bg-white/10 transition-colors"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 text-xs font-bold hover:bg-slate-200 dark:hover:bg-white/10 hover:scale-[1.02] active:scale-95 transition-all"
                   >
                     <ClipboardList className="w-3 h-3" />
                     <span>Template</span>
                   </button>
                   {showTemplates && (
-                    <div className="absolute bottom-full left-0 mb-2 w-64 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl shadow-xl z-50 max-h-52 overflow-y-auto animate-in fade-in slide-in-from-bottom-2 duration-200">
+                    <div className="absolute bottom-full left-0 mb-2 w-64 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl shadow-xl z-50 max-h-52 overflow-y-auto animate-in fade-in slide-in-from-bottom-2 duration-200">
                       <div className="p-2 space-y-0.5">
                         {templates.map((t) => (
                           <button

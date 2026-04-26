@@ -78,7 +78,7 @@ export function PaginationControls({
         <button
           onClick={onFirst}
           disabled={currentPage === 1}
-          className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed text-slate-600 dark:text-slate-400"
+          className="p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed text-slate-600 dark:text-slate-400 hover:scale-110 active:scale-95 transition-all"
           title="Halaman pertama"
         >
           <ChevronsLeft className="w-4 h-4" />
@@ -88,7 +88,7 @@ export function PaginationControls({
         <button
           onClick={onPrev}
           disabled={currentPage === 1}
-          className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed text-slate-600 dark:text-slate-400"
+          className="p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed text-slate-600 dark:text-slate-400 hover:scale-110 active:scale-95 transition-all"
           title="Halaman sebelumnya"
         >
           <ChevronLeft className="w-4 h-4" />
@@ -105,9 +105,9 @@ export function PaginationControls({
               <button
                 key={page}
                 onClick={() => onPage(page)}
-                className={`w-8 h-8 rounded-lg text-xs font-bold transition-colors ${
+                className={`w-8 h-8 rounded-xl text-xs font-bold transition-all hover:scale-[1.02] active:scale-95 ${
                   currentPage === page
-                    ? "bg-blue-600 text-white"
+                    ? "bg-blue-600 text-white shadow-sm shadow-blue-500/30"
                     : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400"
                 }`}
               >
@@ -121,7 +121,7 @@ export function PaginationControls({
         <button
           onClick={onNext}
           disabled={currentPage === totalPages}
-          className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed text-slate-600 dark:text-slate-400"
+          className="p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed text-slate-600 dark:text-slate-400 hover:scale-110 active:scale-95 transition-all"
           title="Halaman berikutnya"
         >
           <ChevronRight className="w-4 h-4" />
@@ -131,7 +131,7 @@ export function PaginationControls({
         <button
           onClick={onLast}
           disabled={currentPage === totalPages}
-          className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed text-slate-600 dark:text-slate-400"
+          className="p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed text-slate-600 dark:text-slate-400 hover:scale-110 active:scale-95 transition-all"
           title="Halaman terakhir"
         >
           <ChevronsRight className="w-4 h-4" />
