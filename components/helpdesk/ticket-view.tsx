@@ -71,36 +71,36 @@ export function TicketView({
   const [copied, setCopied] = useState(false)
   const [myTickets, setMyTickets] = useState<Ticket[]>([])
 
-  const [formData, setFormData] = useState(() => {
-    try {
-      const saved = typeof window !== "undefined" ? localStorage.getItem(DRAFT_KEY) : null
-      if (saved) {
-        const parsed = JSON.parse(saved)
-        return {
-          name: "",
-          role: parsed.role ?? "Siswa",
-          service: parsed.service ?? "perpus",
-          details: parsed.details ?? "",
-          priority: parsed.priority ?? "Sedang" as TicketPriority,
-          department: parsed.department ?? "IT" as Department,
-          attachments: [] as Attachment[],
-          website: "",
-        }
-      }
-    } catch { /* ignore */ }
-    return {
-      name: "",
-      role: "Siswa",
-      service: "perpus",
-      details: "",
-      priority: "Sedang" as TicketPriority,
-      department: "IT" as Department,
-      attachments: [] as Attachment[],
-      website: "",
-    }
+  const [formData, setFormData] = useState({
+    name: "",
+    role: "Siswa",
+    service: "perpus",
+    details: "",
+    priority: "Sedang" as TicketPriority,
+    department: "IT" as Department,
+    attachments: [] as Attachment[],
+    website: "",
   })
   const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([])
   const [draftSaved, setDraftSaved] = useState(false)
+
+  // Load draft on mount (after hydration)
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(DRAFT_KEY)
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        setFormData((prev) => ({
+          ...prev,
+          role: parsed.role ?? prev.role,
+          service: parsed.service ?? prev.service,
+          details: parsed.details ?? prev.details,
+          priority: parsed.priority ?? prev.priority,
+          department: parsed.department ?? prev.department,
+        }))
+      }
+    } catch { /* ignore */ }
+  }, [])
 
   // Auto-fill name when user logs in
   useEffect(() => {
