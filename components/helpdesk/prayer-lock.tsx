@@ -35,7 +35,7 @@ type PrayerLockProps = {
 
 export function PrayerLock({ enabled }: PrayerLockProps) {
   const [mounted, setMounted] = useState(false)
-  const [state, setState] = useState<PrayerState>({ current: null, next: null, isLocked: false })
+  const [state, setState] = useState<PrayerState>({ current: null, next: null, isLocked: false, remainingMinutes: 0 })
   const [showReminder, setShowReminder] = useState(false)
   const [reminderPrayer, setReminderPrayer] = useState<PrayerName | null>(null)
   const [reminderMinutes, setReminderMinutes] = useState(0)
@@ -244,7 +244,7 @@ export function PrayerLock({ enabled }: PrayerLockProps) {
  */
 export function PrayerBadge() {
   const [mounted, setMounted] = useState(false)
-  const [state, setState] = useState<PrayerState>({ current: null, next: null, isLocked: false })
+  const [state, setState] = useState<PrayerState>({ current: null, next: null, isLocked: false, remainingMinutes: 0 })
 
   useEffect(() => {
     setMounted(true)

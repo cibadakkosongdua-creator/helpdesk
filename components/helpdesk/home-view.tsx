@@ -12,6 +12,7 @@ import {
   Sparkles,
   Star,
   Ticket as TicketIcon,
+  ArrowRight,
 } from "lucide-react"
 import { useCallback, useEffect, useState } from "react"
 import { createPortal } from "react-dom"
@@ -424,7 +425,7 @@ export function HomeView({
                   <button
                     onClick={() => {
                       setAiResult(null)
-                      setView("ticket")
+                      setView("/lapor")
                     }}
                     className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-500 text-white text-xs font-bold hover:bg-amber-600 hover:scale-[1.02] active:scale-95 transition-all shadow-sm shadow-amber-500/20"
                   >
@@ -442,7 +443,7 @@ export function HomeView({
                   </h4>
                   <div className="space-y-3">
                     {aiResult.suggestedFaqs.map((faq) => (
-                      <div key={faq.id} className="p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5">
+                      <div key={faq.question} className="p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5">
                         <p className="font-semibold text-sm text-slate-900 dark:text-white">{faq.question}</p>
                         <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed">{faq.answer}</p>
                       </div>
