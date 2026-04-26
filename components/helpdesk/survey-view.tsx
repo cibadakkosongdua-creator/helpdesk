@@ -1,6 +1,7 @@
 "use client"
 
-import { ChevronDown, ClipboardCheck, LogIn, Sparkles, Star } from "lucide-react"
+import * as Select from "@radix-ui/react-select"
+import { Check, ChevronDown, ClipboardCheck, LogIn, Sparkles, Star } from "lucide-react"
 import { useState } from "react"
 import { useSettingsServices } from "@/hooks/use-settings-services"
 import { saveFeedback } from "@/lib/helpdesk/firestore-service"
@@ -230,52 +231,39 @@ function ServiceDropdown({
   onChange: (v: string) => void
   options: { value: string; label: string }[]
 }) {
-  const [isOpen, setIsOpen] = useState(false)
-  const selectedLabel = options.find((o) => o.value === value)?.label || value
-
   return (
-    <div className="relative">
-      <button
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className={`w-full flex items-center justify-between bg-slate-50 dark:bg-slate-950/60 border ${
-          isOpen ? "border-amber-500/50 ring-4 ring-amber-500/10" : "border-slate-200 dark:border-white/10"
-        } rounded-2xl px-5 py-4 text-sm text-slate-900 dark:text-white transition-all font-medium text-left`}
+    <Select.Root value={value} onValueChange={onChange}>
+      <Select.Trigger
+        className="w-full flex items-center justify-between bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-white/10 rounded-2xl px-5 py-4 text-sm text-slate-900 dark:text-white transition-all font-medium text-left focus:outline-none focus:border-amber-500/50 focus:ring-4 focus:ring-amber-500/10 data-[state=open]:border-amber-500/50 data-[state=open]:ring-4 data-[state=open]:ring-amber-500/10"
       >
-        <span className="truncate">{selectedLabel}</span>
-        <ChevronDown
-          className={`w-5 h-5 text-slate-400 transition-transform duration-300 ${
-            isOpen ? "rotate-180" : ""
-          }`}
-        />
-      </button>
+        <Select.Value />
+        <Select.Icon>
+          <ChevronDown className="w-5 h-5 text-slate-400 transition-transform duration-300 [[data-state=open]>&]:rotate-180" />
+        </Select.Icon>
+      </Select.Trigger>
 
-      {isOpen && (
-        <>
-          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
-          <div className="absolute top-full left-0 right-0 mt-2 z-50 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-none overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-            <div className="max-h-60 overflow-y-auto p-1.5 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-white/10">
-              {options.map((o) => (
-                <button
-                  key={o.value}
-                  type="button"
-                  onClick={() => {
-                    onChange(o.value)
-                    setIsOpen(false)
-                  }}
-                  className={`w-full flex items-center px-4 py-3 text-sm rounded-xl transition-colors ${
-                    o.value === value
-                      ? "bg-amber-500 text-white font-bold"
-                      : "text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5"
-                  }`}
-                >
-                  {o.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        </>
-      )}
-    </div>
+      <Select.Portal>
+        <Select.Content
+          position="popper"
+          sideOffset={8}
+          className="z-[100] w-[var(--radix-select-trigger-width)] bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-none overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200"
+        >
+          <Select.Viewport className="p-1.5">
+            {options.map((o) => (
+              <Select.Item
+                key={o.value}
+                value={o.value}
+                className="relative flex items-center w-full px-4 py-3 text-sm text-slate-700 dark:text-slate-300 rounded-xl outline-none transition-colors hover:bg-slate-50 dark:hover:bg-white/5 focus:bg-slate-50 dark:focus:bg-white/5 data-[state=checked]:bg-amber-500 data-[state=checked]:text-white data-[state=checked]:font-bold cursor-pointer select-none"
+              >
+                <Select.ItemText>{o.label}</Select.ItemText>
+                <Select.ItemIndicator className="absolute right-4 inline-flex items-center justify-center">
+                  <Check className="w-4 h-4" />
+                </Select.ItemIndicator>
+              </Select.Item>
+            ))}
+          </Select.Viewport>
+        </Select.Content>
+      </Select.Portal>
+    </Select.Root>
   )
 }
