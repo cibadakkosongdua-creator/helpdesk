@@ -219,15 +219,15 @@ export function ChatWidget() {
           </div>
 
           {/* Bottom Controls */}
-          <div className="p-6 pt-0 bg-transparent">
+          <div className="p-4 md:p-6 pt-0 bg-transparent">
             {/* Quick Actions Chips */}
             {messages.length <= 2 && !isLoading && (
-              <div className="mb-4 flex flex-wrap gap-2">
+              <div className="mb-4 flex flex-nowrap md:flex-wrap gap-2 overflow-x-auto md:overflow-visible pb-2 md:pb-0 scrollbar-hide -mx-2 px-2">
                 {suggestions.map((s) => (
                   <button
                     key={s}
                     onClick={() => setInput(s)}
-                    className="px-4 py-2 text-[11px] font-bold uppercase tracking-wider bg-white dark:bg-white/5 border border-black/5 dark:border-white/10 text-slate-600 dark:text-slate-400 rounded-full hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white transition-all duration-300 active:scale-95"
+                    className="whitespace-nowrap px-4 py-2 text-[10px] md:text-[11px] font-bold uppercase tracking-wider bg-white dark:bg-white/5 border border-black/5 dark:border-white/10 text-slate-600 dark:text-slate-400 rounded-full hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white transition-all duration-300 active:scale-95 flex-shrink-0"
                   >
                     {s}
                   </button>
@@ -238,20 +238,20 @@ export function ChatWidget() {
             {/* Floating Pill Input */}
             <form onSubmit={handleSend} className="relative group">
               <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-violet-600 rounded-[2rem] opacity-20 group-focus-within:opacity-40 blur-md transition-opacity" />
-              <div className="relative flex items-center bg-slate-100 dark:bg-white/10 rounded-[2rem] p-1.5 border border-black/5 dark:border-white/5">
+              <div className="relative flex items-center bg-slate-100 dark:bg-white/10 rounded-[2rem] p-1 md:p-1.5 border border-black/5 dark:border-white/5">
                 <input
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="Ask me anything..."
-                  className="flex-1 bg-transparent px-5 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none"
+                  className="flex-1 bg-transparent px-4 md:px-5 py-2 md:py-2.5 text-xs md:text-sm text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none"
                 />
                 <button
                   type="submit"
                   disabled={!input.trim() || isLoading}
-                  className="w-10 h-10 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 flex items-center justify-center hover:scale-105 active:scale-90 transition-all disabled:opacity-30"
+                  className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 flex items-center justify-center hover:scale-105 active:scale-90 transition-all disabled:opacity-30"
                 >
-                  <ArrowRight className="w-5 h-5" />
+                  <ArrowRight className="w-4 h-4 md:w-5 md:h-5" />
                 </button>
               </div>
             </form>
