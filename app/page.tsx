@@ -236,26 +236,49 @@ export default function Page() {
 }
 
 function FooterLink({ href, label }: { href: string; label: string }) {
-  const getIcon = () => {
+  const getBrandConfig = () => {
     const l = label.toLowerCase()
-    if (l.includes("whatsapp")) return <MessageCircle className="w-4 h-4" />
-    if (l.includes("instagram")) return <Instagram className="w-4 h-4" />
-    if (l.includes("facebook")) return <Facebook className="w-4 h-4" />
-    if (l.includes("twitter") || l.includes("x")) return <Twitter className="w-4 h-4" />
-    if (l.includes("youtube")) return <Youtube className="w-4 h-4" />
-    if (l.includes("github")) return <Github className="w-4 h-4" />
-    return <ExternalLink className="w-4 h-4" />
+    if (l.includes("whatsapp")) return { 
+      icon: <MessageCircle className="w-4 h-4" />, 
+      color: "hover:text-green-500 hover:bg-green-50 dark:hover:bg-green-500/10 hover:border-green-200" 
+    }
+    if (l.includes("instagram")) return { 
+      icon: <Instagram className="w-4 h-4" />, 
+      color: "hover:text-pink-500 hover:bg-pink-50 dark:hover:bg-pink-500/10 hover:border-pink-200" 
+    }
+    if (l.includes("facebook")) return { 
+      icon: <Facebook className="w-4 h-4" />, 
+      color: "hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-600/10 hover:border-blue-200" 
+    }
+    if (l.includes("twitter") || l.includes("x")) return { 
+      icon: <Twitter className="w-4 h-4" />, 
+      color: "hover:text-sky-500 hover:bg-sky-50 dark:hover:bg-sky-500/10 hover:border-sky-200" 
+    }
+    if (l.includes("youtube")) return { 
+      icon: <Youtube className="w-4 h-4" />, 
+      color: "hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 hover:border-red-200" 
+    }
+    if (l.includes("github")) return { 
+      icon: <Github className="w-4 h-4" />, 
+      color: "hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 hover:border-slate-300" 
+    }
+    return { 
+      icon: <Globe className="w-4 h-4" />, 
+      color: "hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:border-blue-200" 
+    }
   }
+
+  const brand = getBrandConfig()
 
   return (
     <a
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex items-center justify-center gap-2 p-2.5 md:px-3 md:py-1.5 rounded-full bg-slate-100 dark:bg-white/5 border border-slate-200/60 dark:border-white/10 text-[11px] font-bold text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-300 dark:hover:border-blue-500/30 transition-all shadow-sm md:shadow-none"
+      className={`inline-flex items-center justify-center gap-2 w-10 h-10 md:w-auto md:h-auto p-0 md:px-3 md:py-1.5 rounded-full bg-white dark:bg-white/5 border border-slate-200/60 dark:border-white/10 text-[11px] font-bold text-slate-500 dark:text-slate-400 transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5 active:scale-95 ${brand.color}`}
       title={label}
     >
-      {getIcon()}
+      {brand.icon}
       <span className="hidden md:inline">{label}</span>
     </a>
   )
